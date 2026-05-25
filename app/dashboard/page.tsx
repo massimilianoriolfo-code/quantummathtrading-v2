@@ -2,12 +2,22 @@ import { currentUser } from '@clerk/nextjs/server'
 import { UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
 import ManageSubscriptionButton from './ManageSubscriptionButton'
+import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
 export default async function DashboardPage() {
   const user = await currentUser()
 
   const isPremium =
     user?.publicMetadata?.isPremium === true
+
+  const { data: simulations } = user
+    ? await supabaseAdmin
+        .from('simulations')
+        .select('id, ticker, company, spot, iv, dte, expected_move, created_at')
+        .eq('clerk_user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(5)
+    : { data: [] }
 
   return (
     <main className="min-h-screen bg-zinc-100 p-8 text-zinc-950">
@@ -64,11 +74,76 @@ export default async function DashboardPage() {
 
         <div className="mt-8 rounded-2xl bg-zinc-50 p-6">
           <h2 className="text-xl font-bold">
+            Recent Simulations
+          </h2>
+
+          {simulations && simulations.length > 0 ? (
+            <div className="mt-4 overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b text-zinc-500">
+                    <th className="py-2">Ticker</th>
+                    <th className="py-2">Company</th>
+                    <th className="py-2">Spot</th>
+                    <th className="py-2">IV</th>
+                    <th className="py-2">DTE</th>
+                    <th className="py-2">Expected Move</th>
+                    <th className="py-2">Date</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {simulations.map((simulation) => (
+                    <tr
+                      key={simulation.id}
+                      className="border-b last:border-0"
+                    >
+                      <td className="py-3 font-bold">
+                        {simulation.ticker}
+                      </td>
+
+                      <td className="py-3">
+                        {simulation.company}
+                      </td>
+
+                      <td className="py-3">
+                        ${Number(simulation.spot).toFixed(2)}
+                      </td>
+
+                      <td className="py-3">
+                        {Number(simulation.iv).toFixed(2)}%
+                      </td>
+
+                      <td className="py-3">
+                        {simulation.dte}
+                      </td>
+
+                      <td className="py-3">
+                        ${Number(simulation.expected_move).toFixed(2)}
+                      </td>
+
+                      <td className="py-3">
+                        {new Date(simulation.created_at).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="mt-2 text-zinc-600">
+              No simulations saved yet.
+            </p>
+          )}
+        </div>
+
+        <div className="mt-8 rounded-2xl bg-zinc-50 p-6">
+          <h2 className="text-xl font-bold">
             Coming Soon
           </h2>
 
           <p className="mt-2 text-zinc-600">
-            Saved simulations, watchlist, portfolio history, and CRPM AI Assistant.
+            Watchlist, portfolio history, and CRPM AI Assistant.
           </p>
         </div>
       </div>

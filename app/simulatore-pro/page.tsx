@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
+import { UserButton } from '@clerk/nextjs'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -152,6 +154,17 @@ export default function SimulatorPage() {
   return (
     <main className="min-h-screen bg-zinc-100 p-6 text-zinc-950">
       <div className="mx-auto max-w-6xl rounded-3xl bg-white p-8 shadow-xl">
+        <div className="mb-6 flex items-center justify-between">
+          <Link
+            href="/dashboard"
+            className="rounded-xl bg-zinc-200 px-4 py-2 text-sm font-bold transition hover:bg-zinc-300"
+          >
+            ← Dashboard
+          </Link>
+
+          <UserButton />
+        </div>
+
         <h1 className="text-center text-4xl font-bold">
           CRPM Quantitative Analysis
         </h1>
