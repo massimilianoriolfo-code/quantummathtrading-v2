@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import YahooFinance from 'yahoo-finance2'
 import { auth, currentUser } from '@clerk/nextjs/server'
+import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
 const yahooFinance = new YahooFinance()
 
@@ -75,15 +76,7 @@ function impliedVolatility(
 
   for (let i = 0; i < 100; i++) {
     const mid = (low + high) / 2
-
-    const price = blackScholesPrice(
-      type,
-      s,
-      k,
-      t,
-      r,
-      mid
-    )
+    const price = blackScholesPrice(type, s, k, t, r, mid)
 
     if (price > marketPrice) {
       high = mid
@@ -115,6 +108,48 @@ function nearestStrike(options: OptionContract[], target: number) {
   )
 }
 
+function nearestExpirationToTarget(expirations: Date[], targetDays: number) {
+  const today = new Date()
+  const targetDate = new Date()
+
+  targetDate.setDate(today.getDate() + targetDays)
+
+  let nearestExpiration = expirations[0]
+  let minDiff = Infinity
+
+  for (const exp of expirations) {
+    const expDate = new Date(exp)
+
+    const diff = Math.abs(
+      expDate.getTime() -
+      targetDate.getTime()
+    )
+
+    if (diff < minDiff) {
+      minDiff = diff
+      nearestExpiration = exp
+    }
+  }
+
+  return nearestExpiration
+}
+
+function dteFromExpiration(expiration: Date) {
+  const today = new Date()
+  const expirationDate = new Date(expiration)
+
+  return Math.max(
+    1,
+    Math.round(
+      (
+        expirationDate.getTime() -
+        today.getTime()
+      ) /
+      (1000 * 60 * 60 * 24)
+    )
+  )
+}
+
 function money(value: number) {
   return `$${value.toFixed(2)}`
 }
@@ -125,7 +160,7 @@ function percent(value: number, base: number) {
 
 export async function GET(req: NextRequest) {
   try {
- const { userId } = await auth()
+    const { userId } = await auth()
 
     if (!userId) {
       return NextResponse.json(
@@ -184,69 +219,48 @@ export async function GET(req: NextRequest) {
       )
     }
 
-    const today = new Date()
+    const expiration30 =
+      nearestExpirationToTarget(expirations, 30)
 
-    const targetDate = new Date()
+    const expiration180 =
+      nearestExpirationToTarget(expirations, 180)
 
-    targetDate.setDate(
-      today.getDate() + 30
-    )
-
-    let nearestExpiration =
-      expirations[0]
-
-    let minDiff = Infinity
-
-    for (const exp of expirations) {
-      const expDate = new Date(exp)
-
-      const diff = Math.abs(
-        expDate.getTime() -
-        targetDate.getTime()
-      )
-
-      if (diff < minDiff) {
-        minDiff = diff
-        nearestExpiration = exp
-      }
-    }
-
-    const chain =
+    const chain30 =
       await yahooFinance.options(
         ticker,
         {
-          date: nearestExpiration
+          date: expiration30
         }
       )
 
-    const optionChain =
-      chain.options?.[0]
+    const optionChain30 =
+      chain30.options?.[0]
 
-    if (!optionChain) {
+    if (!optionChain30) {
       return NextResponse.json(
-        { error: 'Option chain unavailable' },
+        { error: '30DTE option chain unavailable' },
         { status: 404 }
       )
     }
 
-    const calls: OptionContract[] =
-      optionChain.calls || []
+    const calls30: OptionContract[] =
+      optionChain30.calls || []
 
-    const puts: OptionContract[] =
-      optionChain.puts || []
+    const puts30: OptionContract[] =
+      optionChain30.puts || []
 
-    if (!calls.length || !puts.length) {
+    if (!calls30.length || !puts30.length) {
       return NextResponse.json(
-        { error: 'No options found' },
+        { error: 'No 30DTE options found' },
         { status: 404 }
       )
     }
 
     const atmCall =
-      nearestStrike(calls, spot)
+      nearestStrike(calls30, spot)
 
     const atmPut =
-      nearestStrike(puts, spot)
+      nearestStrike(puts30, spot)
 
     const callPremium =
       getOptionPrice(atmCall)
@@ -254,23 +268,14 @@ export async function GET(req: NextRequest) {
     const putPremium =
       getOptionPrice(atmPut)
 
-    const expirationDate =
-      new Date(nearestExpiration)
+    const dte =
+      dteFromExpiration(expiration30)
 
-    const dte = Math.max(
-      1,
-      Math.round(
-        (
-          expirationDate.getTime() -
-          today.getTime()
-        ) /
-        (1000 * 60 * 60 * 24)
-      )
-    )
+    const t =
+      dte / 365
 
-    const t = dte / 365
-
-    const riskFreeRate = 0.045
+    const riskFreeRate =
+      0.045
 
     const callIV =
       impliedVolatility(
@@ -310,16 +315,59 @@ export async function GET(req: NextRequest) {
       spot - expectedMove
 
     const callUpper =
-      nearestStrike(calls, upperBoundary)
+      nearestStrike(calls30, upperBoundary)
 
     const putLower =
-      nearestStrike(puts, lowerBoundary)
+      nearestStrike(puts30, lowerBoundary)
 
     const callUpperPremium =
       getOptionPrice(callUpper)
 
     const putLowerPremium =
       getOptionPrice(putLower)
+
+    const chain180 =
+      await yahooFinance.options(
+        ticker,
+        {
+          date: expiration180
+        }
+      )
+
+    const optionChain180 =
+      chain180.options?.[0]
+
+    if (!optionChain180) {
+      return NextResponse.json(
+        { error: '6-month option chain unavailable' },
+        { status: 404 }
+      )
+    }
+
+    const puts180: OptionContract[] =
+      optionChain180.puts || []
+
+    if (!puts180.length) {
+      return NextResponse.json(
+        { error: 'No 6-month puts found' },
+        { status: 404 }
+      )
+    }
+
+    const marriedPutTargetStrike =
+      spot * 1.015
+
+    const marriedPut =
+      nearestStrike(
+        puts180,
+        marriedPutTargetStrike
+      )
+
+    const marriedPutPremium =
+      getOptionPrice(marriedPut)
+
+    const marriedPutDte =
+      dteFromExpiration(expiration180)
 
     const capital =
       spot * 100
@@ -337,6 +385,13 @@ export async function GET(req: NextRequest) {
         putLowerPremium
       ) * 100
 
+    const marriedPutRisk =
+      (
+        spot -
+        marriedPut.strike +
+        marriedPutPremium
+      ) * 100
+
     const machines = [
       {
         name:
@@ -349,7 +404,7 @@ export async function GET(req: NextRequest) {
           callUpper.strike,
 
         expiry:
-          nearestExpiration,
+          expiration30,
 
         premium:
           Number(
@@ -380,7 +435,7 @@ export async function GET(req: NextRequest) {
           putLower.strike,
 
         expiry:
-          nearestExpiration,
+          expiration30,
 
         premium:
           Number(
@@ -408,27 +463,27 @@ export async function GET(req: NextRequest) {
           'BUY PUT + 100 SHARES',
 
         strike:
-          putLower.strike,
+          marriedPut.strike,
 
         expiry:
-          nearestExpiration,
+          expiration180,
 
         premium:
           Number(
-            putLowerPremium.toFixed(2)
+            marriedPutPremium.toFixed(2)
           ),
 
         maxProfit:
           'Unlimited',
 
         maxRisk:
-          `${money((spot - putLower.strike + putLowerPremium) * 100)} (${percent((spot - putLower.strike + putLowerPremium) * 100, capital)})`,
+          `${money(marriedPutRisk)} (${percent(marriedPutRisk, capital)})`,
 
         description:
-          'Protective structure for stock ownership.',
+          'Protective structure using a put slightly above ATM, with expiration of approximately 6 months or more.',
 
         note:
-          'Structural hedge machine.'
+          `Structural hedge machine. Rule applied: strike about 1–2% above spot and longer-dated protection. DTE: ${marriedPutDte}.`
       },
 
       {
@@ -442,7 +497,7 @@ export async function GET(req: NextRequest) {
           callUpper.strike,
 
         expiry:
-          nearestExpiration,
+          expiration30,
 
         premium:
           Number(
@@ -473,7 +528,7 @@ export async function GET(req: NextRequest) {
           `${putLower.strike} / ${callUpper.strike}`,
 
         expiry:
-          nearestExpiration,
+          expiration30,
 
         premium:
           Number(
@@ -497,8 +552,7 @@ export async function GET(req: NextRequest) {
       }
     ]
 
-    return NextResponse.json({
-
+    const result = {
       ticker,
 
       company:
@@ -517,7 +571,7 @@ export async function GET(req: NextRequest) {
         ),
 
       expiration:
-        nearestExpiration,
+        expiration30,
 
       dte,
 
@@ -574,8 +628,55 @@ export async function GET(req: NextRequest) {
       machines,
 
       method:
-        'ATM 30DTE IV recalculated from option premiums using Black-Scholes.'
-    })
+        'ATM 30DTE IV recalculated from option premiums using Black-Scholes. Married Put uses a protective put about 1–2% above ATM with approximately 6 months or more to expiration.'
+    }
+
+    const { error: saveError } =
+      await supabaseAdmin
+        .from('simulations')
+        .insert({
+          clerk_user_id:
+            userId,
+
+          ticker:
+            result.ticker,
+
+          company:
+            result.company,
+
+          spot:
+            result.spot,
+
+          iv:
+            result.iv,
+
+          expiration:
+            String(result.expiration),
+
+          dte:
+            result.dte,
+
+          expected_move:
+            result.expectedMove,
+
+          lower_boundary:
+            result.lowerBoundary,
+
+          upper_boundary:
+            result.upperBoundary,
+
+          result:
+            result
+        })
+
+    if (saveError) {
+      console.error(
+        'Supabase simulation save error:',
+        saveError.message
+      )
+    }
+    
+    return NextResponse.json(result)
 
   } catch (error: any) {
 
