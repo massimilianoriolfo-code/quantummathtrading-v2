@@ -123,12 +123,14 @@ export default function SimulatorPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [details, setDetails] = useState('')
+  const [watchlistMessage, setWatchlistMessage] = useState('')
 
   async function runAnalysis() {
     try {
       setLoading(true)
       setError('')
       setDetails('')
+      setWatchlistMessage('')
       setData(null)
 
       const response = await fetch(`/api/simulator?ticker=${ticker}`)
@@ -148,6 +150,39 @@ export default function SimulatorPage() {
       )
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function addToWatchlist() {
+    if (!data) return
+
+    try {
+      setWatchlistMessage('')
+
+      const response = await fetch('/api/watchlist/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ticker: data.ticker,
+          company: data.company,
+        }),
+      })
+
+      const json = await response.json()
+
+      if (!response.ok) {
+        throw new Error(json.error || 'Unable to add to watchlist')
+      }
+
+      setWatchlistMessage('Added to watchlist')
+    } catch (err) {
+      setWatchlistMessage(
+        err instanceof Error
+          ? err.message
+          : 'Unable to add to watchlist'
+      )
     }
   }
 
@@ -196,13 +231,30 @@ export default function SimulatorPage() {
         {data && (
           <>
             <section className="mt-10 rounded-2xl border border-zinc-200 bg-white p-6">
-              <h2 className="text-2xl font-bold">{data.company}</h2>
+              <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
+                <div>
+                  <h2 className="text-2xl font-bold">{data.company}</h2>
 
-              <p className="mt-2 text-sm text-zinc-500">
-                Analysis generated on{' '}
-                {new Date().toLocaleDateString()} at{' '}
-                {new Date().toLocaleTimeString()}
-              </p>
+                  <p className="mt-2 text-sm text-zinc-500">
+                    Analysis generated on{' '}
+                    {new Date().toLocaleDateString()} at{' '}
+                    {new Date().toLocaleTimeString()}
+                  </p>
+                </div>
+
+                <button
+                  onClick={addToWatchlist}
+                  className="rounded-xl bg-black px-4 py-2 text-sm font-bold text-white transition hover:opacity-90"
+                >
+                  Add to Watchlist
+                </button>
+              </div>
+
+              {watchlistMessage && (
+                <div className="mt-4 rounded-xl bg-green-50 p-3 text-sm font-bold text-green-700">
+                  {watchlistMessage}
+                </div>
+              )}
 
               <div className="mt-4 grid gap-4 md:grid-cols-4">
                 <div className="rounded-xl bg-zinc-100 p-4">
