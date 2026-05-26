@@ -28,6 +28,21 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    const existing =
+      await supabaseAdmin
+        .from('watchlist')
+        .select('id')
+        .eq('clerk_user_id', userId)
+        .eq('ticker', ticker)
+        .maybeSingle()
+
+    if (existing.data) {
+      return NextResponse.json({
+        success: true,
+        message: 'Already in watchlist'
+      })
+    }
+
     const { error } =
       await supabaseAdmin
         .from('watchlist')
@@ -45,7 +60,8 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({
-      success: true
+      success: true,
+      message: 'Added to watchlist'
     })
 
   } catch (error: any) {

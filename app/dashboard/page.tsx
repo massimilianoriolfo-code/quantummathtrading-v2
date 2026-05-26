@@ -19,6 +19,15 @@ export default async function DashboardPage() {
         .limit(5)
     : { data: [] }
 
+  const { data: watchlist } = user
+    ? await supabaseAdmin
+        .from('watchlist')
+        .select('id, ticker, company, created_at')
+        .eq('clerk_user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(10)
+    : { data: [] }
+
   return (
     <main className="min-h-screen bg-zinc-100 p-8 text-zinc-950">
       <div className="mx-auto max-w-4xl rounded-3xl bg-white p-8 shadow-xl">
@@ -70,6 +79,40 @@ export default async function DashboardPage() {
           </Link>
 
           <ManageSubscriptionButton />
+        </div>
+
+        <div className="mt-8 rounded-2xl bg-zinc-50 p-6">
+          <h2 className="text-xl font-bold">
+            My Watchlist
+          </h2>
+
+          {watchlist && watchlist.length > 0 ? (
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              {watchlist.map((item) => (
+                <div
+                  key={item.id}
+                  className="rounded-xl border bg-white p-4 shadow-sm"
+                >
+                  <div className="text-lg font-bold">
+                    {item.ticker}
+                  </div>
+
+                  <div className="mt-1 text-sm text-zinc-600">
+                    {item.company || 'Company not available'}
+                  </div>
+
+                  <div className="mt-3 text-xs text-zinc-400">
+                    Added on{' '}
+                    {new Date(item.created_at).toLocaleDateString()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-2 text-zinc-600">
+              No tickers saved yet.
+            </p>
+          )}
         </div>
 
         <div className="mt-8 rounded-2xl bg-zinc-50 p-6">
@@ -143,7 +186,7 @@ export default async function DashboardPage() {
           </h2>
 
           <p className="mt-2 text-zinc-600">
-            Watchlist, portfolio history, and CRPM AI Assistant.
+            Portfolio history and CRPM AI Assistant.
           </p>
         </div>
       </div>
