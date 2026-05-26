@@ -28,6 +28,22 @@ export default async function DashboardPage() {
         .limit(10)
     : { data: [] }
 
+  const latestSimulationMap =
+    new Map()
+
+  simulations?.forEach((simulation) => {
+    if (
+      !latestSimulationMap.has(
+        simulation.ticker
+      )
+    ) {
+      latestSimulationMap.set(
+        simulation.ticker,
+        simulation
+      )
+    }
+  })
+
   return (
     <main className="min-h-screen bg-zinc-100 p-8 text-zinc-950">
       <div className="mx-auto max-w-4xl rounded-3xl bg-white p-8 shadow-xl">
@@ -87,36 +103,86 @@ export default async function DashboardPage() {
           </h2>
 
           {watchlist && watchlist.length > 0 ? (
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
-              {watchlist.map((item) => (
-                <div
-                  key={item.id}
-                  className="rounded-xl border bg-white p-4 shadow-sm"
-                >
-                  <div className="text-lg font-bold">
-                    {item.ticker}
-                  </div>
+            <div className="mt-4 overflow-x-auto">
+  <table className="w-full text-left text-sm">
+    <thead>
+      <tr className="border-b text-zinc-500">
+        <th className="py-2">Ticker</th>
+        <th className="py-2">Spot</th>
+        <th className="py-2">IV</th>
+        <th className="py-2">Expected Move</th>
+        <th className="py-2">DTE</th>
+        <th className="py-2">Last Update</th>
+        <th className="py-2">Action</th>
+      </tr>
+    </thead>
 
-                  <div className="mt-1 text-sm text-zinc-600">
-                    {item.company || 'Company not available'}
-                  </div>
+    <tbody>
+      {watchlist.map((item) => {
+        const latest =
+          latestSimulationMap.get(
+            item.ticker
+          )
 
-                  <div className="mt-3 flex items-center justify-between">
-                   <div className="text-xs text-zinc-400">
-                     Added on{' '}
-                     {new Date(item.created_at).toLocaleDateString()}
-                   </div>
+        return (
+          <tr
+            key={item.id}
+            className="border-b last:border-0"
+          >
+            <td className="py-3 font-bold">
+              {item.ticker}
+            </td>
 
-                   <Link
-                     href={`/simulatore-pro?ticker=${item.ticker}`}
-                     className="rounded-lg bg-black px-3 py-2 text-sm font-medium text-white transition hover:opacity-90"
-                   >
-                     Run Analysis
-                   </Link>
-                 </div>
-                 </div>
-              ))}
-            </div>
+            <td className="py-3">
+              {latest
+                ? `$${Number(
+                    latest.spot
+                  ).toFixed(2)}`
+                : '-'}
+            </td>
+
+            <td className="py-3">
+              {latest
+                ? `${Number(
+                    latest.iv
+                  ).toFixed(2)}%`
+                : '-'}
+            </td>
+
+            <td className="py-3">
+              {latest
+                ? `$${Number(
+                    latest.expected_move
+                  ).toFixed(2)}`
+                : '-'}
+            </td>
+
+            <td className="py-3">
+  {latest
+    ? latest.dte
+    : '-'}
+</td>
+
+<td className="py-3">
+  {latest
+    ? new Date(latest.created_at).toLocaleString()
+    : '-'}
+</td>
+
+<td className="py-3">
+  <Link
+                href={`/simulatore-pro?ticker=${item.ticker}`}
+                className="rounded-lg bg-black px-3 py-2 text-sm font-medium text-white transition hover:opacity-90"
+              >
+                Run Analysis
+              </Link>
+            </td>
+          </tr>
+        )
+      })}
+    </tbody>
+  </table>
+</div>
           ) : (
             <p className="mt-2 text-zinc-600">
               No tickers saved yet.
