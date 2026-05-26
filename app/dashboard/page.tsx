@@ -101,11 +101,20 @@ export default async function DashboardPage() {
                     {item.company || 'Company not available'}
                   </div>
 
-                  <div className="mt-3 text-xs text-zinc-400">
-                    Added on{' '}
-                    {new Date(item.created_at).toLocaleDateString()}
-                  </div>
-                </div>
+                  <div className="mt-3 flex items-center justify-between">
+                   <div className="text-xs text-zinc-400">
+                     Added on{' '}
+                     {new Date(item.created_at).toLocaleDateString()}
+                   </div>
+
+                   <Link
+                     href={`/simulatore-pro?ticker=${item.ticker}`}
+                     className="rounded-lg bg-black px-3 py-2 text-sm font-medium text-white transition hover:opacity-90"
+                   >
+                     Run Analysis
+                   </Link>
+                 </div>
+                 </div>
               ))}
             </div>
           ) : (

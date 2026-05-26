@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { UserButton } from '@clerk/nextjs'
 import {
@@ -124,6 +124,16 @@ export default function SimulatorPage() {
   const [error, setError] = useState('')
   const [details, setDetails] = useState('')
   const [watchlistMessage, setWatchlistMessage] = useState('')
+  useEffect(() => {
+  const params = new URLSearchParams(window.location.search)
+
+  const urlTicker =
+    params.get('ticker')
+
+  if (urlTicker) {
+    setTicker(urlTicker.toUpperCase())
+  }
+}, [])
 
   async function runAnalysis() {
     try {
