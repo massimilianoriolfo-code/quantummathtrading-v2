@@ -74,10 +74,19 @@ function buildConeChart(data: SimulatorData) {
   for (let day = 0; day <= data.dte; day++) {
     labels.push(`${day}d`)
 
-    const move = spot * ivDecimal * Math.sqrt(day / 365)
+    const move =
+      spot *
+      ivDecimal *
+      Math.sqrt(day / 365)
 
-    upper.push(Number((spot + move).toFixed(2)))
-    lower.push(Number((spot - move).toFixed(2)))
+    upper.push(
+      Number((spot + move).toFixed(2))
+    )
+
+    lower.push(
+      Number((spot - move).toFixed(2))
+    )
+
     spotLine.push(spot)
   }
 
@@ -124,27 +133,25 @@ export default function SimulatorPage() {
   const [error, setError] = useState('')
   const [details, setDetails] = useState('')
   const [watchlistMessage, setWatchlistMessage] = useState('')
-  useEffect(() => {
-  const params = new URLSearchParams(window.location.search)
 
-  const urlTicker =
-    params.get('ticker')
-
-  if (urlTicker) {
-    setTicker(urlTicker.toUpperCase())
-  }
-}, [])
-
-  async function runAnalysis() {
+  async function runAnalysis(forcedTicker?: string) {
     try {
+      const currentTicker =
+        (forcedTicker || ticker).toUpperCase()
+
+      if (!currentTicker) return
+
       setLoading(true)
       setError('')
       setDetails('')
       setWatchlistMessage('')
       setData(null)
 
-      const response = await fetch(`/api/simulator?ticker=${ticker}`)
-      const json = await response.json()
+      const response =
+        await fetch(`/api/simulator?ticker=${currentTicker}`)
+
+      const json =
+        await response.json()
 
       if (!response.ok) {
         setDetails(json.details || '')
@@ -163,6 +170,31 @@ export default function SimulatorPage() {
     }
   }
 
+  useEffect(() => {
+  const params =
+    new URLSearchParams(window.location.search)
+
+  const urlTicker =
+    params.get('ticker')
+
+  const refresh =
+    params.get('refresh') === 'true'
+
+  if (urlTicker) {
+    const cleanTicker =
+      urlTicker.toUpperCase()
+
+    setTicker(cleanTicker)
+
+    if (refresh) {
+      ;(async () => {
+        await runAnalysis(cleanTicker)
+        window.location.href = '/dashboard'
+      })()
+    }
+  }
+}, [])
+
   async function addToWatchlist() {
     if (!data) return
 
@@ -180,13 +212,16 @@ export default function SimulatorPage() {
         }),
       })
 
-      const json = await response.json()
+      const json =
+        await response.json()
 
       if (!response.ok) {
         throw new Error(json.error || 'Unable to add to watchlist')
       }
 
-      setWatchlistMessage('Added to watchlist')
+      setWatchlistMessage(
+        json.message || 'Added to watchlist'
+      )
     } catch (err) {
       setWatchlistMessage(
         err instanceof Error
@@ -223,7 +258,7 @@ export default function SimulatorPage() {
           />
 
           <button
-            onClick={runAnalysis}
+            onClick={() => runAnalysis()}
             disabled={!ticker || loading}
             className="rounded-xl bg-black px-6 py-3 text-white disabled:opacity-40"
           >
