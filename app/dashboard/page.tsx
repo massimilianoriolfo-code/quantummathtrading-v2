@@ -2,6 +2,7 @@ import { currentUser } from '@clerk/nextjs/server'
 import { UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
 import ManageSubscriptionButton from './ManageSubscriptionButton'
+import AddPortfolioPositionForm from './AddPortfolioPositionForm'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
 export default async function DashboardPage() {
@@ -13,9 +14,7 @@ export default async function DashboardPage() {
   const { data: simulations } = user
     ? await supabaseAdmin
         .from('simulations')
-        .select(
-          'id, ticker, company, spot, iv, dte, expected_move, created_at'
-        )
+        .select('id, ticker, company, spot, iv, dte, expected_move, created_at')
         .eq('clerk_user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(50)
@@ -28,6 +27,14 @@ export default async function DashboardPage() {
         .eq('clerk_user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(10)
+    : { data: [] }
+
+  const { data: portfolio } = user
+    ? await supabaseAdmin
+        .from('portfolio')
+        .select('id, ticker, company, quantity, average_cost, created_at')
+        .eq('clerk_user_id', user.id)
+        .order('created_at', { ascending: false })
     : { data: [] }
 
   const latestSimulationMap = new Map()
@@ -43,11 +50,8 @@ export default async function DashboardPage() {
 
   const sortedWatchlist =
     [...(watchlist || [])].sort((a, b) => {
-      const latestA =
-        latestSimulationMap.get(a.ticker)
-
-      const latestB =
-        latestSimulationMap.get(b.ticker)
+      const latestA = latestSimulationMap.get(a.ticker)
+      const latestB = latestSimulationMap.get(b.ticker)
 
       if (!latestA) return 1
       if (!latestB) return -1
@@ -98,9 +102,7 @@ export default async function DashboardPage() {
                   : 'font-bold text-red-600'
               }
             >
-              {isPremium
-                ? 'Premium Active'
-                : 'Free / Not Active'}
+              {isPremium ? 'Premium Active' : 'Free / Not Active'}
             </span>
           </p>
         </div>
@@ -135,17 +137,13 @@ export default async function DashboardPage() {
 
           {sortedWatchlist.length > 0 ? (
             <div className="mt-4 overflow-x-auto">
-              <table className="min-w-[1250px] w-full text-left text-sm">
+              <table className="min-w-[980px] w-full text-left text-sm">
                 <thead>
                   <tr className="border-b text-zinc-500">
                     <th className="py-3 pr-4">Ticker</th>
-                    <th className="py-3 pr-4">Spot</th>
-                    <th className="py-3 pr-4">IV</th>
-                    <th className="py-3 pr-4">Expected Move</th>
-                    <th className="py-3 pr-4">DTE</th>
-                    <th className="py-3 pr-4">Bias</th>
-                    <th className="py-3 pr-4">Best Machine</th>
-                    <th className="py-3 pr-4">CRPM Score</th>
+                    <th className="py-3 pr-4">Snapshot</th>
+                    <th className="py-3 pr-4">Opportunity</th>
+                    <th className="py-3 pr-4">Strategy</th>
                     <th className="py-3 pr-4">Last Update</th>
                     <th className="py-3 pr-4">Action</th>
                   </tr>
@@ -205,74 +203,101 @@ export default async function DashboardPage() {
                         key={item.id}
                         className="border-b last:border-0"
                       >
-                        <td className="py-4 pr-4 font-bold">
-                          {item.ticker}
+                        <td className="py-4 pr-4">
+                          <div className="font-bold">
+                            {item.ticker}
+                          </div>
+
+                          <div className="mt-1 text-xs text-zinc-500">
+                            {item.company || 'Company not available'}
+                          </div>
                         </td>
 
                         <td className="py-4 pr-4">
-                          {latest
-                            ? `$${Number(latest.spot).toFixed(2)}`
-                            : '-'}
+                          {latest ? (
+                            <div className="space-y-1">
+                              <div>
+                                Spot:{' '}
+                                <span className="font-bold">
+                                  ${Number(latest.spot).toFixed(2)}
+                                </span>
+                              </div>
+
+                              <div>
+                                IV:{' '}
+                                <span className="font-bold">
+                                  {Number(latest.iv).toFixed(2)}%
+                                </span>
+                              </div>
+
+                              <div>
+                                DTE:{' '}
+                                <span className="font-bold">
+                                  {latest.dte}
+                                </span>
+                              </div>
+                            </div>
+                          ) : (
+                            '-'
+                          )}
                         </td>
 
                         <td className="py-4 pr-4">
-                          {latest
-                            ? `${Number(latest.iv).toFixed(2)}%`
-                            : '-'}
+                          {latest ? (
+                            <div className="space-y-1">
+                              <div>
+                                EM:{' '}
+                                <span className="font-bold">
+                                  ${Number(latest.expected_move).toFixed(2)}
+                                </span>
+                              </div>
+
+                              <div>
+                                CRPM Score:{' '}
+                                <span className="font-bold text-green-700">
+                                  {crpmScore}
+                                </span>
+                              </div>
+                            </div>
+                          ) : (
+                            '-'
+                          )}
                         </td>
 
                         <td className="py-4 pr-4">
-                          {latest
-                            ? `$${Number(
-                                latest.expected_move
-                              ).toFixed(2)}`
-                            : '-'}
-                        </td>
+                          <div className="flex flex-col gap-2">
+                            <span
+                              className={`w-fit whitespace-nowrap rounded-full px-3 py-1 text-xs font-bold ${biasClass}`}
+                            >
+                              {bias}
+                            </span>
 
-                        <td className="py-4 pr-4">
-                          {latest ? latest.dte : '-'}
-                        </td>
-
-                        <td className="py-4 pr-4">
-                          <span
-                            className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-bold ${biasClass}`}
-                          >
-                            {bias}
-                          </span>
-                        </td>
-
-                        <td className="py-4 pr-4">
-                          <span
-                            className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-bold ${machineClass}`}
-                          >
-                            {bestMachine}
-                          </span>
-                        </td>
-
-                        <td className="py-4 pr-4 font-bold text-green-700">
-                          {crpmScore}
+                            <span
+                              className={`w-fit whitespace-nowrap rounded-full px-3 py-1 text-xs font-bold ${machineClass}`}
+                            >
+                              {bestMachine}
+                            </span>
+                          </div>
                         </td>
 
                         <td className="py-4 pr-4 text-xs text-zinc-500">
                           {latest
-                            ? new Date(
-                                latest.created_at
-                              ).toLocaleString()
+                            ? new Date(latest.created_at).toLocaleString()
                             : '-'}
                         </td>
 
                         <td className="py-4 pr-4">
-                          <div className="flex gap-2">
+                          <div className="flex flex-col gap-2">
                             <Link
                               href={`/simulatore-pro?ticker=${item.ticker}`}
-                              className="whitespace-nowrap rounded-lg bg-black px-3 py-2 text-sm font-medium text-white transition hover:opacity-90"
+                              className="whitespace-nowrap rounded-lg bg-black px-3 py-2 text-center text-sm font-medium text-white transition hover:opacity-90"
                             >
                               Run Analysis
                             </Link>
 
                             <Link
                               href={`/simulatore-pro?ticker=${item.ticker}&refresh=true`}
-                              className="whitespace-nowrap rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100"
+                              className="whitespace-nowrap rounded-lg border border-zinc-300 bg-white px-3 py-2 text-center text-sm font-medium text-zinc-700 transition hover:bg-zinc-100"
                             >
                               Refresh
                             </Link>
@@ -287,6 +312,114 @@ export default async function DashboardPage() {
           ) : (
             <p className="mt-2 text-zinc-600">
               No tickers saved yet.
+            </p>
+          )}
+        </div>
+
+        <div className="mt-8 rounded-2xl bg-zinc-50 p-6">
+          <h2 className="text-xl font-bold">
+            Portfolio Positions
+          </h2>
+
+          <AddPortfolioPositionForm />
+
+          {portfolio && portfolio.length > 0 ? (
+            <div className="mt-6 overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b text-zinc-500">
+                    <th className="py-2">Ticker</th>
+                    <th className="py-2">Company</th>
+                    <th className="py-2">Quantity</th>
+                    <th className="py-2">Cost Basis</th>
+                    <th className="py-2">Market Price</th>
+                    <th className="py-2">Market Value</th>
+                    <th className="py-2">Unrealized P/L</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {portfolio.map((position) => {
+                    const latest =
+                      latestSimulationMap.get(position.ticker)
+
+                    const quantity =
+                      Number(position.quantity)
+
+                    const costBasisPerShare =
+                      Number(position.average_cost)
+
+                    const marketPrice =
+                      latest
+                        ? Number(latest.spot)
+                        : 0
+
+                    const marketValue =
+                      latest
+                        ? quantity * marketPrice
+                        : 0
+
+                    const totalCostBasis =
+                      quantity * costBasisPerShare
+
+                    const unrealizedPL =
+                      latest
+                        ? marketValue - totalCostBasis
+                        : 0
+
+                    return (
+                      <tr
+                        key={position.id}
+                        className="border-b last:border-0"
+                      >
+                        <td className="py-3 font-bold">
+                          {position.ticker}
+                        </td>
+
+                        <td className="py-3">
+                          {position.company || '-'}
+                        </td>
+
+                        <td className="py-3">
+                          {quantity}
+                        </td>
+
+                        <td className="py-3">
+                          ${costBasisPerShare.toFixed(2)}
+                        </td>
+
+                        <td className="py-3">
+                          {latest
+                            ? `$${marketPrice.toFixed(2)}`
+                            : '-'}
+                        </td>
+
+                        <td className="py-3">
+                          {latest
+                            ? `$${marketValue.toFixed(2)}`
+                            : '-'}
+                        </td>
+
+                        <td
+                          className={
+                            unrealizedPL >= 0
+                              ? 'py-3 font-bold text-green-700'
+                              : 'py-3 font-bold text-red-700'
+                          }
+                        >
+                          {latest
+                            ? `$${unrealizedPL.toFixed(2)}`
+                            : '-'}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="mt-4 text-zinc-600">
+              No portfolio positions saved yet.
             </p>
           )}
         </div>
@@ -338,15 +471,11 @@ export default async function DashboardPage() {
                       </td>
 
                       <td className="py-3">
-                        ${Number(
-                          simulation.expected_move
-                        ).toFixed(2)}
+                        ${Number(simulation.expected_move).toFixed(2)}
                       </td>
 
                       <td className="py-3">
-                        {new Date(
-                          simulation.created_at
-                        ).toLocaleDateString()}
+                        {new Date(simulation.created_at).toLocaleDateString()}
                       </td>
                     </tr>
                   ))}
@@ -366,7 +495,7 @@ export default async function DashboardPage() {
           </h2>
 
           <p className="mt-2 text-zinc-600">
-            Portfolio history and CRPM AI Assistant.
+            Theta Ratio, Protected Equity, portfolio risk, and CRPM AI Assistant.
           </p>
         </div>
       </div>
