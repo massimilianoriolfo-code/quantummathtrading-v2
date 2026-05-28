@@ -71,6 +71,44 @@ export default async function DashboardPage() {
       return scoreB - scoreA
     })
 
+  let totalMarketValue = 0
+  let totalCostBasis = 0
+  let totalUnrealizedPL = 0
+
+  portfolio?.forEach((position) => {
+    const latest =
+      latestSimulationMap.get(position.ticker)
+
+    if (!latest) return
+
+    const quantity =
+      Number(position.quantity)
+
+    const costBasisPerShare =
+      Number(position.average_cost)
+
+    const marketPrice =
+      Number(latest.spot)
+
+    const marketValue =
+      quantity * marketPrice
+
+    const costBasis =
+      quantity * costBasisPerShare
+
+    const unrealizedPL =
+      marketValue - costBasis
+
+    totalMarketValue += marketValue
+    totalCostBasis += costBasis
+    totalUnrealizedPL += unrealizedPL
+  })
+
+  const portfolioPLPercent =
+    totalCostBasis > 0
+      ? (totalUnrealizedPL / totalCostBasis) * 100
+      : 0
+
   return (
     <main className="min-h-screen bg-zinc-100 p-8 text-zinc-950">
       <div className="mx-auto max-w-6xl rounded-3xl bg-white p-8 shadow-xl">
@@ -122,6 +160,60 @@ export default async function DashboardPage() {
           </Link>
 
           <ManageSubscriptionButton />
+        </div>
+
+        <div className="mt-8 grid gap-4 md:grid-cols-4">
+          <div className="rounded-2xl border bg-white p-5 shadow-sm">
+            <div className="text-sm font-medium text-zinc-500">
+              Total Market Value
+            </div>
+
+            <div className="mt-2 text-2xl font-bold text-zinc-950">
+              ${totalMarketValue.toFixed(2)}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border bg-white p-5 shadow-sm">
+            <div className="text-sm font-medium text-zinc-500">
+              Total Cost Basis
+            </div>
+
+            <div className="mt-2 text-2xl font-bold text-zinc-950">
+              ${totalCostBasis.toFixed(2)}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border bg-white p-5 shadow-sm">
+            <div className="text-sm font-medium text-zinc-500">
+              Total Unrealized P/L
+            </div>
+
+            <div
+              className={
+                totalUnrealizedPL >= 0
+                  ? 'mt-2 text-2xl font-bold text-green-700'
+                  : 'mt-2 text-2xl font-bold text-red-700'
+              }
+            >
+              ${totalUnrealizedPL.toFixed(2)}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border bg-white p-5 shadow-sm">
+            <div className="text-sm font-medium text-zinc-500">
+              Portfolio P/L %
+            </div>
+
+            <div
+              className={
+                portfolioPLPercent >= 0
+                  ? 'mt-2 text-2xl font-bold text-green-700'
+                  : 'mt-2 text-2xl font-bold text-red-700'
+              }
+            >
+              {portfolioPLPercent.toFixed(2)}%
+            </div>
+          </div>
         </div>
 
         <div className="mt-8 rounded-2xl bg-zinc-50 p-6">
@@ -495,7 +587,7 @@ export default async function DashboardPage() {
           </h2>
 
           <p className="mt-2 text-zinc-600">
-            Theta Ratio, Protected Equity, portfolio risk, and CRPM AI Assistant.
+            Theta Ratio, Protected Equity with real NLV, portfolio risk, and CRPM AI Assistant.
           </p>
         </div>
       </div>
