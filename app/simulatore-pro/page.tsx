@@ -133,6 +133,7 @@ export default function SimulatorPage() {
   const [error, setError] = useState('')
   const [details, setDetails] = useState('')
   const [watchlistMessage, setWatchlistMessage] = useState('')
+  const [returnTo, setReturnTo] = useState('/dashboard')
 
   async function runAnalysis(forcedTicker?: string) {
     try {
@@ -170,9 +171,16 @@ export default function SimulatorPage() {
     }
   }
 
-  useEffect(() => {
+ useEffect(() => {
   const params =
     new URLSearchParams(window.location.search)
+
+  const returnTarget =
+    params.get('returnTo')
+
+  if (returnTarget) {
+    setReturnTo(returnTarget)
+  }
 
   const urlTicker =
     params.get('ticker')
@@ -194,7 +202,6 @@ export default function SimulatorPage() {
     }
   }
 }, [])
-
   async function addToWatchlist() {
     if (!data) return
 
@@ -235,12 +242,12 @@ export default function SimulatorPage() {
     <main className="min-h-screen bg-zinc-100 p-6 text-zinc-950">
       <div className="mx-auto max-w-6xl rounded-3xl bg-white p-8 shadow-xl">
         <div className="mb-6 flex items-center justify-between">
-          <Link
-            href="/dashboard"
-            className="rounded-xl bg-zinc-200 px-4 py-2 text-sm font-bold transition hover:bg-zinc-300"
-          >
-            ← Dashboard
-          </Link>
+      <Link
+  href={returnTo}
+  className="rounded-xl bg-zinc-200 px-4 py-2 text-sm font-bold transition hover:bg-zinc-300"
+>
+  ← Back
+</Link>
 
           <UserButton />
         </div>
