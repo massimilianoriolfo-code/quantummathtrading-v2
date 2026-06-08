@@ -59,22 +59,26 @@ export default function RefreshAllPricesButton({ positions }: Props) {
         type="button"
         onClick={handleRefreshAll}
         disabled={loading || positions.length === 0}
-        title="Update market prices for all positions"
-        className="inline-flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold text-zinc-900 shadow-sm transition hover:border-zinc-400 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
+className="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md border border-slate-500 bg-slate-600 px-4 text-[12px] font-semibold text-white shadow-[0_3px_8px_rgba(0,0,0,0.18)] transition-all duration-150 hover:-translate-y-[1px] hover:bg-amber-400 hover:shadow-[0_6px_12px_rgba(0,0,0,0.22)] active:translate-y-[2px] active:shadow-[0_1px_3px_rgba(0,0,0,0.18)] disabled:cursor-not-allowed disabled:opacity-50"
       >
-        <RefreshCw size={17} className={loading ? 'animate-spin' : ''} />
+        <RefreshCw
+  size={16}
+  className={loading ? 'animate-spin text-white' : 'text-white'}
+/>
         {loading ? `Refreshing ${done}/${total}` : 'Refresh All Prices'}
       </button>
 
       {loading && (
         <div className="w-[190px] text-right text-[11px] text-zinc-500">
           <div>Updating {current}</div>
+
           <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-zinc-200">
             <div
               className="h-full bg-zinc-500 transition-all"
               style={{ width: `${progress}%` }}
             />
           </div>
+
           <div>{progress}% completed</div>
         </div>
       )}

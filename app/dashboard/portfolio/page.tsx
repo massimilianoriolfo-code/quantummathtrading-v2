@@ -62,8 +62,10 @@ function KpiCard({
   valueClass?: string
 }) {
   return (
-    <div className="grid min-h-[108px] grid-cols-[52px_1fr] items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
-      <div className={`flex h-12 w-12 items-center justify-center rounded-full ${iconBgClass}`}>
+    <div className="grid min-h-[94px] grid-cols-[44px_1fr] items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3 shadow-sm">
+      <div
+        className={`flex h-10 w-10 items-center justify-center rounded-full ${iconBgClass}`}
+      >
         {icon}
       </div>
 
@@ -73,7 +75,7 @@ function KpiCard({
           <InfoTooltip text={tooltip} />
         </div>
 
-        <div className={`mt-2 text-lg font-bold leading-tight ${valueClass}`}>
+        <div className={`mt-2 text-[17px] font-bold leading-tight ${valueClass}`}>
           {value}
         </div>
       </div>
@@ -85,7 +87,7 @@ function TickerLogo({ ticker }: { ticker: string }) {
   const symbol = ticker.toUpperCase()
 
   if (symbol === 'AAPL') {
-    return <Apple size={22} className="text-black" />
+    return <Apple size={20} className="text-black" />
   }
 
   if (symbol === 'MSFT') {
@@ -189,9 +191,9 @@ export default async function PortfolioPage() {
       .reverse()[0] || null
 
   return (
-    <main className="min-h-screen bg-zinc-50 p-4 text-sm text-zinc-950">
+    <main className="min-h-screen bg-zinc-50 p-4 text-[12px] text-zinc-950">
       <div className="mx-auto w-full rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-        <div className="flex items-start justify-between border-b border-zinc-200 pb-4">
+        <div className="flex items-start justify-between border-b border-zinc-200 pb-4 pr-2">
           <div>
             <Link
               href="/dashboard"
@@ -204,14 +206,11 @@ export default async function PortfolioPage() {
               <h1 className="text-3xl font-bold tracking-tight">Portfolio</h1>
               <InfoTooltip text="Portfolio overview: positions, cost basis, market value and unrealized profit or loss." />
             </div>
-
-            
           </div>
 
           <Link
             href="/simulatore-pro"
-            className="inline-flex items-center gap-2 rounded-lg border border-zinc-900 bg-zinc-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-zinc-800"
-          >
+            className="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md border border-slate-500 bg-slate-600 px-4 text-[12px] font-semibold text-white shadow-[0_3px_8px_rgba(0,0,0,0.18)] transition-all duration-150 hover:-translate-y-[1px] hover:bg-amber-400 hover:shadow-[0_6px_12px_rgba(0,0,0,0.22)] active:translate-y-[2px] active:shadow-[0_1px_3px_rgba(0,0,0,0.18)] disabled:cursor-not-allowed disabled:opacity-50">
             <BarChart3 size={16} />
             Open Simulator
           </Link>
@@ -221,40 +220,36 @@ export default async function PortfolioPage() {
           <KpiCard
             label="Positions"
             value={formatNumber(portfolio?.length || 0)}
-            
-           tooltip="Positions: Number of currently open portfolio positions."
-            icon={<BriefcaseBusiness size={24} className="text-slate-600" />}
+            tooltip="Positions: number of currently open portfolio positions."
+            icon={<BriefcaseBusiness size={22} className="text-slate-600" />}
             iconBgClass="bg-slate-100"
           />
 
           <KpiCard
             label="Market Value"
             value={formatMoney(totalMarketValue)}
-          
-            tooltip="Market value: Current market value of all portfolio positions."
-            icon={<BadgeDollarSign size={24} className="text-emerald-700" />}
+            tooltip="Market value: current market value of all portfolio positions."
+            icon={<BadgeDollarSign size={22} className="text-emerald-700" />}
             iconBgClass="bg-emerald-50"
           />
 
           <KpiCard
             label="Cost Basis"
             value={formatMoney(totalCostBasis)}
-            
-           tooltip="Cost basis: total capital invested in the portfolio."
-         icon={<PieChart size={24} className="text-stone-700" />}
-iconBgClass="bg-stone-100"
+            tooltip="Cost basis: total capital invested in the portfolio."
+            icon={<PieChart size={22} className="text-stone-700" />}
+            iconBgClass="bg-stone-100"
           />
 
           <KpiCard
             label="Unrealized P/L"
             value={formatMoney(totalUnrealizedPL)}
-            
-          tooltip="Unrealized P/L: profit or loss if positions were closed now."
+            tooltip="Unrealized P/L: profit or loss if positions were closed now."
             icon={
               totalUnrealizedPL >= 0 ? (
-                <TrendingUp size={24} className="text-emerald-600" />
+                <TrendingUp size={22} className="text-emerald-600" />
               ) : (
-                <TrendingDown size={24} className="text-red-600" />
+                <TrendingDown size={22} className="text-red-600" />
               )
             }
             iconBgClass={totalUnrealizedPL >= 0 ? 'bg-emerald-50' : 'bg-red-50'}
@@ -264,32 +259,31 @@ iconBgClass="bg-stone-100"
           <KpiCard
             label="Portfolio P/L %"
             value={formatPercent(portfolioPLPercent)}
-         tooltip="Portfolio P/L %: Unrealized return relative to invested capital."
-            icon={<Percent size={24} className="text-amber-700" />}
+            tooltip="Portfolio P/L %: unrealized return relative to invested capital."
+            icon={<Percent size={22} className="text-amber-700" />}
             iconBgClass="bg-amber-50"
             valueClass={portfolioPLPercent >= 0 ? 'text-emerald-700' : 'text-red-600'}
           />
         </div>
 
-        <div className="mt-5 rounded-xl border border-zinc-200 bg-white">
+        <div className="mt-4 rounded-xl border border-zinc-200 bg-white">
           <AddPortfolioPositionForm />
 
           <div className="border-t border-zinc-200">
-            <div className="flex items-center justify-between px-4 py-3">
+            <div className="flex items-center justify-between py-2.5 pl-4 pr-2">
               <div>
                 <div className="flex items-center gap-2">
-                  <BriefcaseBusiness size={22} className="text-slate-600" />
+                  <BriefcaseBusiness size={20} className="text-slate-600" />
                   <h2 className="text-lg font-bold">Portfolio Positions</h2>
-                  <InfoTooltip text="List of saved portfolio positions with market value and unrealized profit or loss" />
+                  <InfoTooltip text="Portfolio positions: saved positions with market value and unrealized profit or loss." />
                 </div>
-
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3 pr-0">
                 <div className="text-right text-xs text-zinc-600">
-                  <div className="flex items-center justify-end gap-1 font-bold uppercase tracking-wide">
+                  <div className="flex items-center justify-end gap-1 font-semibold tracking-normal">
                     Last Refresh
-                    <InfoTooltip text="Date and time when portfolio prices were last refreshed" />
+                    <InfoTooltip text="Last refresh: date and time when portfolio prices were last refreshed." />
                   </div>
                   <div>{formatSnapshotDate(latestPortfolioSnapshot)}</div>
                 </div>
@@ -307,83 +301,83 @@ iconBgClass="bg-stone-100"
 
             {portfolio && portfolio.length > 0 ? (
               <div className="max-h-[460px] overflow-auto">
-                <table className="w-full min-w-[1180px] border-collapse text-sm">
-                  <thead className="sticky top-0 z-10 bg-zinc-50 text-xs text-zinc-700">
+                <table className="w-full min-w-[1080px] table-fixed border-collapse text-[12px]">
+                  <thead className="sticky top-0 z-10 bg-zinc-50 text-[10px] text-zinc-700">
                     <tr className="border-y border-zinc-200">
-                      <th className="w-[8%] px-3 py-3 text-left font-bold uppercase">
-                        <span className="inline-flex items-center gap-1">
+                      <th className="w-[9%] px-2 py-2 text-left font-semibold uppercase">
+                        <span className="inline-flex items-center gap-1 whitespace-nowrap">
                           Ticker
-                          <InfoTooltip text="Ticker symbol of the position" />
+                          <InfoTooltip text="Ticker: ticker symbol of the position." />
                         </span>
                       </th>
 
-                      <th className="w-[18%] px-3 py-3 text-left font-bold uppercase">
-                        <span className="inline-flex items-center gap-1">
+                      <th className="w-[17%] px-2 py-2 text-left font-semibold uppercase">
+                        <span className="inline-flex items-center gap-1 whitespace-nowrap">
                           Company
-                          <InfoTooltip text="Company name" />
+                          <InfoTooltip text="Company: company name associated with the ticker." />
                         </span>
                       </th>
 
-                      <th className="w-[7%] px-3 py-3 text-right font-bold uppercase">
-                        <span className="inline-flex items-center justify-end gap-1">
+                      <th className="w-[6%] px-2 py-2 text-right font-semibold uppercase">
+                        <span className="inline-flex items-center justify-end gap-1 whitespace-nowrap">
                           Qty
-                          <InfoTooltip text="Number of shares currently held" />
+                          <InfoTooltip text="Quantity: number of shares currently held." />
                         </span>
                       </th>
 
-                      <th className="w-[9%] px-3 py-3 text-right font-bold uppercase">
-                        <span className="inline-flex items-center justify-end gap-1">
+                      <th className="w-[8%] px-2 py-2 text-right font-semibold uppercase">
+                        <span className="inline-flex items-center justify-end gap-1 whitespace-nowrap">
                           Avg Price
-                          <InfoTooltip text="Average acquisition price per share" />
+                          <InfoTooltip text="Avg price: average acquisition price per share." />
                         </span>
                       </th>
 
-                      <th className="w-[11%] px-3 py-3 text-right font-bold uppercase">
-                        <span className="inline-flex items-center justify-end gap-1">
+                      <th className="w-[10%] px-2 py-2 text-right font-semibold uppercase">
+                        <span className="inline-flex items-center justify-end gap-1 whitespace-nowrap">
                           Cost Basis
-                          <InfoTooltip text="Quantity × Average Price" />
+                          <InfoTooltip text="Cost basis: quantity multiplied by average price." />
                         </span>
                       </th>
 
-                      <th className="w-[11%] px-3 py-3 text-right font-bold uppercase">
-                        <span className="inline-flex items-center justify-end gap-1">
-                          Market Price<InfoTooltip text="Market price: Latest available price. The percentage shows the gain or loss versus Avg Price." />
-                           
+                      <th className="w-[12%] px-2 py-2 text-right font-semibold uppercase">
+                        <span className="inline-flex items-center justify-end gap-1 whitespace-nowrap">
+                          Market Price
+                          <InfoTooltip text="Market price: latest available price. The percentage shows the gain or loss versus Avg Price." />
                         </span>
                       </th>
 
-                      <th className="w-[13%] px-3 py-3 text-right font-bold uppercase">
-                        <span className="inline-flex items-center justify-end gap-1">
+                      <th className="w-[12%] px-2 py-2 text-right font-semibold uppercase">
+                        <span className="inline-flex items-center justify-end gap-1 whitespace-nowrap">
                           Snapshot
-                          <InfoTooltip text="Date and time when market price was last refreshed" />
+                          <InfoTooltip text="Snapshot: date and time when market price was last refreshed." />
                         </span>
                       </th>
 
-                      <th className="w-[11%] px-3 py-3 text-right font-bold uppercase">
-                        <span className="inline-flex items-center justify-end gap-1">
+                      <th className="w-[10%] px-2 py-2 text-right font-semibold uppercase">
+                        <span className="inline-flex items-center justify-end gap-1 whitespace-nowrap">
                           Market Value
-                          <InfoTooltip text="Current position value based on latest market price" />
+                          <InfoTooltip text="Market value: current position value based on latest market price." />
                         </span>
                       </th>
 
-                      <th className="w-[11%] px-3 py-3 text-right font-bold uppercase">
-                        <span className="inline-flex items-center justify-end gap-1">
+                      <th className="w-[10%] px-2 py-2 text-right font-semibold uppercase">
+                        <span className="inline-flex items-center justify-end gap-1 whitespace-nowrap">
                           Unreal. P/L
-                          <InfoTooltip text="Current unrealized profit or loss" />
+                          <InfoTooltip text="Unrealized P/L: current unrealized profit or loss." />
                         </span>
                       </th>
 
-                      <th className="w-[7%] px-3 py-3 text-right font-bold uppercase">
-                        <span className="inline-flex items-center justify-end gap-1">
+                      <th className="w-[6%] px-2 py-2 text-right font-semibold uppercase">
+                        <span className="inline-flex items-center justify-end gap-1 whitespace-nowrap">
                           P/L %
-                          <InfoTooltip text="Unrealized profit or loss expressed as percentage of cost basis" />
+                          <InfoTooltip text="P/L %: unrealized profit or loss expressed as percentage of cost basis." />
                         </span>
                       </th>
 
-                      <th className="w-[9%] px-3 py-3 text-right font-bold uppercase">
-                        <span className="inline-flex items-center justify-end gap-1">
+                      <th className="w-[8%] py-2 pl-2 pr-2 text-right font-semibold uppercase">
+                        <span className="inline-flex items-center justify-end gap-1 whitespace-nowrap">
                           Actions
-                          <InfoTooltip text="Update, edit or delete this position" />
+                          <InfoTooltip text="Actions: update, edit or delete this position." />
                         </span>
                       </th>
                     </tr>
@@ -416,69 +410,69 @@ iconBgClass="bg-stone-100"
                           : 0
 
                       const priceVsAveragePercent =
-  averagePrice !== 0
-    ? ((marketPrice - averagePrice) / Math.abs(averagePrice)) * 100
-    : 0
+                        averagePrice !== 0
+                          ? ((marketPrice - averagePrice) / Math.abs(averagePrice)) * 100
+                          : 0
 
-const priceIsAboveAverage = priceVsAveragePercent >= 0
+                      const priceIsAboveAverage = priceVsAveragePercent >= 0
 
                       return (
                         <tr
                           key={position.id}
                           className="border-b border-zinc-200 hover:bg-zinc-50"
                         >
-                          <td className="px-3 py-3 font-bold">
-                            <div className="flex items-center gap-3">
+                          <td className="px-2 py-2 font-bold">
+                            <div className="flex items-center gap-2">
                               <TickerLogo ticker={position.ticker} />
                               <span>{position.ticker}</span>
                             </div>
                           </td>
 
-                          <td className="max-w-[220px] truncate px-3 py-3 text-zinc-700">
+                          <td className="truncate px-2 py-2 text-zinc-700">
                             {position.company || '-'}
                           </td>
 
-                          <td className="whitespace-nowrap px-3 py-3 text-right">
+                          <td className="whitespace-nowrap px-2 py-2 text-right">
                             {formatNumber(quantity)}
                           </td>
 
-                          <td className="whitespace-nowrap px-3 py-3 text-right">
+                          <td className="whitespace-nowrap px-2 py-2 text-right">
                             {formatMoney(averagePrice)}
                           </td>
 
-                          <td className="whitespace-nowrap px-3 py-3 text-right">
+                          <td className="whitespace-nowrap px-2 py-2 text-right">
                             {formatMoney(totalPositionCostBasis)}
                           </td>
 
-                          <td className="whitespace-nowrap px-3 py-3 text-right">
-                           {hasPrice ? (
-  <span className="inline-flex items-center justify-end gap-2">
-    <span>{formatMoney(marketPrice)}</span>
+                          <td className="whitespace-nowrap px-2 py-2 text-right">
+                            {hasPrice ? (
+                              <span className="inline-flex items-center justify-end gap-1.5">
+                                <span>{formatMoney(marketPrice)}</span>
 
-    <span
-      className={
-        priceIsAboveAverage
-          ? 'inline-flex items-center gap-1 text-emerald-700'
-          : 'inline-flex items-center gap-1 text-red-600'
-      }
-    >
-      {priceIsAboveAverage ? (
-        <TrendingUp size={15} />
-      ) : (
-        <TrendingDown size={15} />
-      )}
+                                <span
+                                  className={
+                                    priceIsAboveAverage
+                                      ? 'inline-flex items-center gap-1 text-emerald-700'
+                                      : 'inline-flex items-center gap-1 text-red-600'
+                                  }
+                                >
+                                  {priceIsAboveAverage ? (
+                                    <TrendingUp size={14} />
+                                  ) : (
+                                    <TrendingDown size={14} />
+                                  )}
 
-      <span className="text-[11px] font-bold">
-        ({formatPercent(priceVsAveragePercent)})
-      </span>
-    </span>
-  </span>
-) : (
-  '-'
-)}
+                                  <span className="text-[11px] font-bold">
+                                    ({formatPercent(priceVsAveragePercent)})
+                                  </span>
+                                </span>
+                              </span>
+                            ) : (
+                              '-'
+                            )}
                           </td>
 
-                          <td className="whitespace-nowrap px-3 py-3 text-right text-zinc-500">
+                          <td className="whitespace-nowrap px-2 py-2 text-right text-zinc-500">
                             {position.snapshot_time
                               ? formatSnapshotDate(position.snapshot_time)
                               : latest
@@ -486,15 +480,15 @@ const priceIsAboveAverage = priceVsAveragePercent >= 0
                                 : '-'}
                           </td>
 
-                          <td className="whitespace-nowrap px-3 py-3 text-right">
+                          <td className="whitespace-nowrap px-2 py-2 text-right">
                             {hasPrice ? formatMoney(marketValue) : '-'}
                           </td>
 
                           <td
                             className={
                               unrealizedPL >= 0
-                                ? 'whitespace-nowrap px-3 py-3 text-right font-bold text-emerald-700'
-                                : 'whitespace-nowrap px-3 py-3 text-right font-bold text-red-600'
+                                ? 'whitespace-nowrap px-2 py-2 text-right font-bold text-emerald-700'
+                                : 'whitespace-nowrap px-2 py-2 text-right font-bold text-red-600'
                             }
                           >
                             {hasPrice ? formatMoney(unrealizedPL) : '-'}
@@ -503,15 +497,15 @@ const priceIsAboveAverage = priceVsAveragePercent >= 0
                           <td
                             className={
                               plPercent >= 0
-                                ? 'whitespace-nowrap px-3 py-3 text-right font-bold text-emerald-700'
-                                : 'whitespace-nowrap px-3 py-3 text-right font-bold text-red-600'
+                                ? 'whitespace-nowrap px-2 py-2 text-right font-bold text-emerald-700'
+                                : 'whitespace-nowrap px-2 py-2 text-right font-bold text-red-600'
                             }
                           >
                             {hasPrice ? formatPercent(plPercent) : '-'}
                           </td>
 
-                          <td className="whitespace-nowrap px-3 py-3 text-right">
-                            <div className="flex justify-end gap-1.5">
+                          <td className="whitespace-nowrap py-2 pl-2 pr-2 text-right">
+                            <div className="flex justify-end gap-1">
                               <RefreshPriceButton
                                 positionId={position.id}
                                 ticker={position.ticker}
@@ -545,7 +539,7 @@ const priceIsAboveAverage = priceVsAveragePercent >= 0
           </div>
 
           <div className="flex items-center justify-center gap-2 border-t border-zinc-200 px-4 py-3 text-xs text-zinc-500">
-            <InfoTooltip text="Data shown for education only. This platform does not provide financial advice" />
+            <InfoTooltip text="Disclaimer: data shown for educational purposes only. This platform does not provide financial advice." />
             Data for educational purposes only. Not financial advice. Market data may be delayed.
           </div>
         </div>

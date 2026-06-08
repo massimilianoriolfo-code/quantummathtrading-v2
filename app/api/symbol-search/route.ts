@@ -1,39 +1,44 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 
 type YahooQuote = {
   symbol?: string
   shortname?: string
   longname?: string
-  quoteType?: string
   exchDisp?: string
+  exchange?: string
+  quoteType?: string
 }
 
-export async function GET(req: NextRequest) {
+function isIsin(query: string) {
+  return /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/.test(query.trim().toUpperCase())
+}
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const q = searchParams.get('q')?.trim()
+
+  if (!q || q.length < 2) {
+    return NextResponse.json([])
+  }
+
+  const query = q.toUpperCase()
+  const searchQuery = isIsin(query) ? query : q
+
   try {
-    const { searchParams } = new URL(req.url)
+    const url = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(
+      searchQuery
+    )}&quotesCount=10&newsCount=0`
 
-    const query =
-      searchParams.get('q')?.trim() || ''
-
-    if (query.length < 2) {
-      return NextResponse.json([])
-    }
-
-    const response = await fetch(
-      `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(
-        query
-      )}&quotesCount=8&newsCount=0`,
-      {
-        headers: {
-          'User-Agent': 'Mozilla/5.0',
-        },
-        cache: 'no-store',
-      }
-    )
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0',
+      },
+      next: { revalidate: 60 },
+    })
 
     if (!response.ok) {
       return NextResponse.json(
-        { error: 'Symbol search failed' },
+        { error: 'Symbol search unavailable' },
         { status: 500 }
       )
     }
@@ -41,36 +46,32 @@ export async function GET(req: NextRequest) {
     const data = await response.json()
 
     const results =
-      (data.quotes || [])
-        .filter((item: YahooQuote) => {
-  return (
-    item.symbol &&
-    (item.longname || item.shortname) &&
-    ['EQUITY', 'ETF', 'MUTUALFUND', 'INDEX'].includes(item.quoteType || '')
-  )
-})
-.sort((a: YahooQuote, b: YahooQuote) => {
-  const q = query.toUpperCase()
-
-  if (a.symbol?.toUpperCase() === q) return -1
-  if (b.symbol?.toUpperCase() === q) return 1
-
-  return 0
-})
-        .map((item: YahooQuote) => ({
-          ticker: item.symbol,
-          company: item.longname || item.shortname,
-          exchange: item.exchDisp || '',
-        }))
-        .slice(0, 8)
+      data.quotes
+        ?.filter((quote: YahooQuote) => {
+          return (
+            quote.symbol &&
+            quote.quoteType === 'EQUITY'
+          )
+        })
+        .map((quote: YahooQuote) => ({
+          ticker: quote.symbol,
+          company:
+            quote.longname ||
+            quote.shortname ||
+            quote.symbol,
+          exchange:
+            quote.exchDisp ||
+            quote.exchange ||
+            '',
+          isin: isIsin(query) ? query : null,
+        })) || []
 
     return NextResponse.json(results)
-  } catch (error: any) {
+  } catch (error) {
+    console.error(error)
+
     return NextResponse.json(
-      {
-        error: 'Symbol search error',
-        details: error.message,
-      },
+      { error: 'Unable to search symbol' },
       { status: 500 }
     )
   }

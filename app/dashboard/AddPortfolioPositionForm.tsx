@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { PlusCircle, Search } from 'lucide-react'
+import { PlusCircle } from 'lucide-react'
 import SymbolSearch from '@/components/SymbolSearch'
 import InfoTooltip from '@/components/InfoTooltip'
 
@@ -54,74 +54,56 @@ export default function AddPortfolioPositionForm() {
   }
 
   return (
-    <div className="border-b border-zinc-200 p-4">
-      <div className="mb-4 flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-blue-700">
-          <PlusCircle size={20} />
-        </div>
+    <div className="border-b border-zinc-200 py-3 pl-4 pr-2">
+      <form onSubmit={handleSubmit} className="grid gap-2.5">
+        <div className="grid items-center gap-3 md:grid-cols-[180px_1fr]">
+          <div className="flex items-center gap-1.5">
+            <h2 className="text-base font-bold leading-tight">
+              Add Position
+            </h2>
 
-        <div>
-          <div className="flex items-center gap-1">
-            <h2 className="text-lg font-bold">Add Position</h2>
-            <InfoTooltip text="Add a new portfolio position with ticker, quantity and average acquisition price" />
+            <InfoTooltip text="Add position: search by company, ticker or ISIN, then enter quantity and average purchase price." />
           </div>
 
-          
-        </div>
-      </div>
-
-      <form onSubmit={handleSubmit} className="grid gap-4">
-        <div>
-          <label className="mb-2 flex items-center gap-1 text-xs font-bold uppercase text-zinc-700">
-            Company or Ticker
-            <InfoTooltip text="Search and select a listed company or ticker symbol" />
-          </label>
-
-          <div className="relative">
-            <div className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-zinc-400">
-              <Search size={18} />
-            </div>
-
-            <SymbolSearch
-              onSelect={handleSymbolSelect}
-              placeholder="Search company or ticker (e.g., Apple, Microsoft, Nvidia, AAPL...)"
-            />
-          </div>
+          <SymbolSearch
+            onSelect={handleSymbolSelect}
+            placeholder="Search company, ticker or ISIN (e.g., Apple, AAPL, US0378331005...)"
+          />
         </div>
 
-        <div className="grid items-end gap-4 md:grid-cols-[1fr_1fr_1fr_1fr_auto]">
+        <div className="grid items-end gap-3 md:grid-cols-[1fr_1fr_1fr_1fr_auto]">
           <div>
-            <label className="mb-1 flex items-center gap-1 text-xs font-bold uppercase text-zinc-700">
+            <label className="mb-1 flex items-center gap-1 text-[11px] font-semibold uppercase text-zinc-700">
               Ticker
-              <InfoTooltip text="Selected ticker symbol" />
+              <InfoTooltip text="Ticker: selected ticker symbol." />
             </label>
 
             <input
               value={ticker}
               readOnly
               placeholder="Ticker"
-              className="w-full rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm"
+              className="h-9 w-full rounded-lg border border-zinc-300 bg-zinc-50 px-3 text-[13px] text-zinc-900"
             />
           </div>
 
           <div>
-            <label className="mb-1 flex items-center gap-1 text-xs font-bold uppercase text-zinc-700">
+            <label className="mb-1 flex items-center gap-1 text-[11px] font-semibold uppercase text-zinc-700">
               Company
-              <InfoTooltip text="Selected company name" />
+              <InfoTooltip text="Company: selected company name." />
             </label>
 
             <input
               value={company}
               readOnly
               placeholder="Company name"
-              className="w-full rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm"
+              className="h-9 w-full rounded-lg border border-zinc-300 bg-zinc-50 px-3 text-[13px] text-zinc-900"
             />
           </div>
 
           <div>
-            <label className="mb-1 flex items-center gap-1 text-xs font-bold uppercase text-zinc-700">
+            <label className="mb-1 flex items-center gap-1 text-[11px] font-semibold uppercase text-zinc-700">
               Quantity
-              <InfoTooltip text="Number of shares to add to portfolio" />
+              <InfoTooltip text="Quantity: number of shares to add to the portfolio." />
             </label>
 
             <input
@@ -129,14 +111,14 @@ export default function AddPortfolioPositionForm() {
               onChange={(e) => setQuantity(e.target.value)}
               placeholder="Quantity"
               type="number"
-              className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+              className="h-9 w-full rounded-lg border border-zinc-300 px-3 text-[13px] text-zinc-900"
             />
           </div>
 
           <div>
-            <label className="mb-1 flex items-center gap-1 text-xs font-bold uppercase text-zinc-700">
+            <label className="mb-1 flex items-center gap-1 text-[11px] font-semibold uppercase text-zinc-700">
               Avg Price
-              <InfoTooltip text="Average price paid per share" />
+              <InfoTooltip text="Avg price: average price paid per share." />
             </label>
 
             <input
@@ -144,22 +126,22 @@ export default function AddPortfolioPositionForm() {
               onChange={(e) => setAveragePrice(e.target.value)}
               placeholder="Average price paid"
               type="number"
-              className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+              className="h-9 w-full rounded-lg border border-zinc-300 px-3 text-[13px] text-zinc-900"
             />
           </div>
 
           <button
             type="submit"
             title="Save this position into your portfolio"
-            className="inline-flex items-center justify-center gap-2 rounded-lg border border-zinc-900 bg-zinc-900 px-5 py-2 text-sm font-bold text-white shadow-sm hover:bg-zinc-800"
+            className="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md border border-slate-500 bg-slate-600 px-4 text-[12px] font-semibold text-white shadow-[0_3px_8px_rgba(0,0,0,0.18)] transition-all duration-150 hover:-translate-y-[1px] hover:bg-amber-400 hover:shadow-[0_6px_12px_rgba(0,0,0,0.22)] active:translate-y-[2px] active:shadow-[0_1px_3px_rgba(0,0,0,0.18)] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <PlusCircle size={17} />
+            <PlusCircle size={15} />
             Add Position
           </button>
         </div>
 
         {message && (
-          <div className="text-sm font-semibold text-emerald-700">
+          <div className="text-[13px] font-semibold text-emerald-700">
             {message}
           </div>
         )}
