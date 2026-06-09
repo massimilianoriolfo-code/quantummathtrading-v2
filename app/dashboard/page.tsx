@@ -1,14 +1,100 @@
 import { currentUser } from '@clerk/nextjs/server'
 import { UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
-import ManageSubscriptionButton from './ManageSubscriptionButton'
+import DashboardNav from '@/components/dashboard/DashboardNav'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
+import {
+  BarChart3,
+  Bot,
+  BriefcaseBusiness,
+  Clock3,
+  CreditCard,
+  Eye,
+} from 'lucide-react'
+
+function formatNumber(value: number) {
+  return value.toLocaleString('en-US')
+}
+
+function formatDate(value: string | null | undefined) {
+  if (!value) return '-'
+
+  return new Intl.DateTimeFormat('it-IT', {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(value))
+}
+
+function MetricCard({
+  label,
+  value,
+}: {
+  label: string
+  value: string
+}) {
+  return (
+    <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3">
+      <div className="text-[11px] font-bold uppercase tracking-wide text-zinc-500">
+        {label}
+      </div>
+      <div className="mt-1 text-[20px] font-bold leading-tight text-zinc-950">
+        {value}
+      </div>
+    </div>
+  )
+}
+
+function ControlCard({
+  title,
+  stat,
+  description,
+  href,
+  icon,
+}: {
+  title: string
+  stat: string
+  description: string
+  href: string
+  icon: React.ReactNode
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex min-h-[128px] flex-col justify-between rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-400 hover:shadow-md"
+    >
+      <div>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="text-[11px] font-bold uppercase tracking-wide text-zinc-400">
+              {stat}
+            </div>
+            <h2 className="mt-1 text-[16px] font-bold text-zinc-950">
+              {title}
+            </h2>
+          </div>
+
+          <div className="text-slate-500">
+            {icon}
+          </div>
+        </div>
+
+        <p className="mt-3 text-[12px] leading-5 text-zinc-500">
+          {description}
+        </p>
+      </div>
+
+     <div className="mt-3 h-4" />
+    </Link>
+  )
+}
 
 export default async function DashboardPage() {
   const user = await currentUser()
 
-  const isPremium =
-    user?.publicMetadata?.isPremium === true
+  const isPremium = user?.publicMetadata?.isPremium === true
 
   const { data: simulations } = user
     ? await supabaseAdmin
@@ -31,242 +117,138 @@ export default async function DashboardPage() {
   const { data: portfolio } = user
     ? await supabaseAdmin
         .from('portfolio')
-        .select('id, ticker, company, quantity, average_cost, created_at')
+        .select('id, ticker, company, quantity, average_cost, market_price, snapshot_time, created_at')
         .eq('clerk_user_id', user.id)
         .order('created_at', { ascending: false })
     : { data: [] }
 
-  const latestSimulationMap = new Map()
+  const latestSnapshot =
+    [
+      ...(simulations?.map((item) => item.created_at) || []),
+      ...(portfolio?.map((item) => item.snapshot_time).filter(Boolean) || []),
+    ]
+      .filter(Boolean)
+      .sort()
+      .reverse()[0] || null
 
-  simulations?.forEach((simulation) => {
-    if (!latestSimulationMap.has(simulation.ticker)) {
-      latestSimulationMap.set(simulation.ticker, simulation)
-    }
-  })
-
-  let totalMarketValue = 0
-  let totalCostBasis = 0
-  let totalUnrealizedPL = 0
-
-  portfolio?.forEach((position) => {
-    const latest =
-      latestSimulationMap.get(position.ticker)
-
-    if (!latest) return
-
-    const quantity =
-      Number(position.quantity)
-
-    const costBasisPerShare =
-      Number(position.average_cost)
-
-    const marketPrice =
-      Number(latest.spot)
-
-    const marketValue =
-      quantity * marketPrice
-
-    const costBasis =
-      quantity * costBasisPerShare
-
-    totalMarketValue += marketValue
-    totalCostBasis += costBasis
-    totalUnrealizedPL += marketValue - costBasis
-  })
-
-  const portfolioPLPercent =
-    totalCostBasis > 0
-      ? (totalUnrealizedPL / totalCostBasis) * 100
-      : 0
+  const portfolioCount = portfolio?.length || 0
+  const watchlistCount = watchlist?.length || 0
+  const simulationsCount = simulations?.length || 0
 
   const controlCards = [
     {
       title: 'Portfolio',
-      description:
-        'Positions, cost basis, market value, unrealized P/L and portfolio analytics.',
+      stat: 'PORTFOLIO',
+      description: `${formatNumber(portfolioCount)} positions monitored as portfolio context for CRPM decision support.`,
       href: '/dashboard/portfolio',
-      stat: `${portfolio?.length || 0} positions`,
-      action: 'Open Portfolio',
+      icon: <BriefcaseBusiness size={19} />,
     },
     {
       title: 'Watchlist',
-      description:
-        'Opportunity list ranked by CRPM score, latest snapshot and refresh actions.',
+      stat: 'WATCHLIST',
+      description: `${formatNumber(watchlistCount)} tickers monitored with CRPM expected move, implied volatility and analysis age.`,
       href: '/dashboard/watchlist',
-      stat: `${watchlist?.length || 0} tickers`,
-      action: 'Open Watchlist',
+      icon: <Eye size={19} />,
+    },
+    {
+      title: 'CRPM Simulator',
+      stat: 'ANALYSIS ENGINE',
+      description: 'Run quantitative options analysis and generate CRPM machine projections.',
+      href: '/simulatore-pro',
+      icon: <BarChart3 size={19} />,
     },
     {
       title: 'Simulations History',
-      description:
-        'Latest CRPM simulations, snapshots, IV, expected move and timestamp history.',
+      stat: 'CRPM ANALYSIS',
+      description: `${formatNumber(simulationsCount)} saved snapshots with spot, IV, expected move and timestamp.`,
       href: '/dashboard/simulations',
-      stat: `${simulations?.length || 0} records`,
-      action: 'Open History',
+      icon: <Clock3 size={19} />,
     },
     {
-      title: 'CRPM Assistant',
-      description:
-        'AI assistant connected to the CRPM book, portfolio and simulation history.',
-      href: '/dashboard/assistant',
-      stat: 'Book KB ready',
-      action: 'Open Assistant',
-    },
+  title: 'CRPM Assistant',
+  stat: 'UNDER DEVELOPMENT',
+  description:
+    'Portfolio-aware assistant based on the CRPM methodology and historical analysis.',
+  href: '/dashboard/assistant',
+  icon: <Bot size={19} />,
+},
     {
       title: 'Subscription / Account',
-      description:
-        'Premium status, billing portal, invoices, payment method and account access.',
+      stat: isPremium ? 'PREMIUM ACTIVE' : 'ACCESS STATUS',
+      description: 'Subscription status, account access and billing management.',
       href: '/dashboard/account',
-      stat: isPremium ? 'Premium Active' : 'Free / Not Active',
-      action: 'Manage Account',
+      icon: <CreditCard size={19} />,
     },
   ]
 
   return (
-    <main className="min-h-screen bg-zinc-100 p-6 text-zinc-950">
+    <main className="min-h-screen bg-zinc-100 p-4 text-zinc-950 md:p-6">
       <div className="mx-auto max-w-7xl">
-        <div className="rounded-3xl border bg-white p-6 shadow-sm">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.25em] text-zinc-400">
-                QuantumMathTrading
-              </p>
-
-              <h1 className="mt-2 text-2xl font-bold tracking-tight">
-                CRPM Control Center
-              </h1>
-
-              <p className="mt-1 text-sm text-zinc-500">
-                Portfolio intelligence, watchlist, simulations and CRPM assistant.
-              </p>
-            </div>
-
-            <UserButton />
-          </div>
-
-          <div className="mt-6 grid gap-3 md:grid-cols-4">
-            <div className="rounded-2xl border bg-zinc-50 p-4">
-              <div className="text-xs font-semibold uppercase text-zinc-500">
-                Market Value
-              </div>
-              <div className="mt-1 text-xl font-bold">
-                ${totalMarketValue.toFixed(2)}
-              </div>
-            </div>
-
-            <div className="rounded-2xl border bg-zinc-50 p-4">
-              <div className="text-xs font-semibold uppercase text-zinc-500">
-                Cost Basis
-              </div>
-              <div className="mt-1 text-xl font-bold">
-                ${totalCostBasis.toFixed(2)}
-              </div>
-            </div>
-
-            <div className="rounded-2xl border bg-zinc-50 p-4">
-              <div className="text-xs font-semibold uppercase text-zinc-500">
-                Unrealized P/L
-              </div>
-              <div
-                className={
-                  totalUnrealizedPL >= 0
-                    ? 'mt-1 text-xl font-bold text-green-700'
-                    : 'mt-1 text-xl font-bold text-red-700'
-                }
-              >
-                ${totalUnrealizedPL.toFixed(2)}
-              </div>
-            </div>
-
-            <div className="rounded-2xl border bg-zinc-50 p-4">
-              <div className="text-xs font-semibold uppercase text-zinc-500">
-                Portfolio P/L %
-              </div>
-              <div
-                className={
-                  portfolioPLPercent >= 0
-                    ? 'mt-1 text-xl font-bold text-green-700'
-                    : 'mt-1 text-xl font-bold text-red-700'
-                }
-              >
-                {portfolioPLPercent.toFixed(2)}%
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-            {controlCards.map((card) => (
-              <Link
-                key={card.title}
-                href={card.href}
-                className="group rounded-2xl border bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-zinc-400 hover:shadow-md"
-              >
-                <div className="flex h-full flex-col justify-between">
-                  <div>
-                    <div className="text-xs font-bold uppercase tracking-wide text-zinc-400">
-                      {card.stat}
-                    </div>
-
-                    <h2 className="mt-2 text-base font-bold">
-                      {card.title}
-                    </h2>
-
-                    <p className="mt-2 text-xs leading-5 text-zinc-500">
-                      {card.description}
-                    </p>
-                  </div>
-
-                  <div className="mt-5 inline-flex w-fit rounded-lg bg-black px-3 py-2 text-xs font-bold text-white transition group-hover:opacity-90">
-                    {card.action}
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-
-          <div className="mt-6 grid gap-3 md:grid-cols-2">
-            <Link
-              href="/simulatore-pro"
-              className="rounded-2xl bg-black p-5 text-white shadow-sm transition hover:opacity-90"
-            >
-              <div className="text-xs font-bold uppercase tracking-wide text-zinc-400">
-                Simulator
-              </div>
-
-              <h2 className="mt-2 text-lg font-bold">
-                Open CRPM Simulator
-              </h2>
-
-              <p className="mt-2 text-xs leading-5 text-zinc-300">
-                Run quantitative options analysis, refresh snapshots and generate CRPM machine outputs.
-              </p>
-            </Link>
-
-            <ManageSubscriptionButton />
-          </div>
-
-          <div className="mt-6 rounded-2xl border bg-zinc-50 p-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <div className="border-b border-zinc-200 pb-4">
+            <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-sm font-bold">
-                  Subscription Status
-                </h2>
+                <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-zinc-400">
+                  QuantumMathTrading
+                </p>
 
-                <p className="mt-1 text-xs text-zinc-500">
-                  Current account access level.
+                <h1 className="mt-2 text-3xl font-bold tracking-tight">
+                  CRPM Control Center
+                </h1>
+
+                <p className="mt-1 text-sm text-zinc-500">
+                  Quantitative options analysis,{' '}
+                  <span className="font-bold text-slate-700">
+                    Calculated Risk and Profit Machines (CRPM)
+                  </span>{' '}
+                  simulations, and portfolio decision support.
                 </p>
               </div>
 
-              <span
-                className={
-                  isPremium
-                    ? 'rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700'
-                    : 'rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700'
-                }
-              >
-                {isPremium ? 'Premium Active' : 'Free / Not Active'}
-              </span>
+              <div className="flex items-center gap-3">
+                <span
+                  className={
+                    isPremium
+                      ? 'hidden rounded-md bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700 md:inline-flex'
+                      : 'hidden rounded-md bg-red-50 px-2.5 py-1 text-[11px] font-bold text-red-700 md:inline-flex'
+                  }
+                >
+                  {isPremium ? 'Premium Active' : 'Free / Not Active'}
+                </span>
+
+                <UserButton />
+              </div>
             </div>
+
+            <DashboardNav active="dashboard" />
+          </div>
+
+          <div className="mt-4 grid gap-3 md:grid-cols-4">
+            <MetricCard
+              label="Portfolio"
+              value={`${formatNumber(portfolioCount)} Positions`}
+            />
+
+            <MetricCard
+              label="Watchlist"
+              value={`${formatNumber(watchlistCount)} Tickers`}
+            />
+
+            <MetricCard
+  label="CRPM Analysis"
+  value={`${formatNumber(simulationsCount)} Snapshots`}
+/>
+
+            <MetricCard
+              label="Last Snapshot"
+              value={formatDate(latestSnapshot)}
+            />
+          </div>
+
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {controlCards.map((card) => (
+              <ControlCard key={card.title} {...card} />
+            ))}
           </div>
         </div>
       </div>
