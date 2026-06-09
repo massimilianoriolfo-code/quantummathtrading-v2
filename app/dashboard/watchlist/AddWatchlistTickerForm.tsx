@@ -1,7 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import { PlusCircle } from 'lucide-react'
 import SymbolSearch from '@/components/SymbolSearch'
+import InfoTooltip from '@/components/InfoTooltip'
 
 type SymbolResult = {
   ticker: string
@@ -39,21 +41,31 @@ export default function AddWatchlistTickerForm() {
   }
 
   return (
-    <div className="mt-3">
-      <SymbolSearch
-        placeholder="Search ticker or company..."
-        onSelect={addSelectedTicker}
-      />
+    <div className="border-b border-zinc-200 px-4 py-3">
+      <div className="grid items-center gap-3 md:grid-cols-[180px_1fr]">
+        <div className="flex items-center gap-1.5">
+          <h2 className="text-base font-bold leading-tight">
+            Add Ticker
+          </h2>
 
-      {loadingTicker && (
-        <div className="mt-2 text-xs font-bold text-zinc-500">
-          Adding {loadingTicker}...
+          <InfoTooltip text="Add ticker: search by company, ticker or ISIN and add it to the watchlist." />
         </div>
-      )}
 
-      {message && (
-        <div className="mt-2 text-xs font-bold text-green-700">
-          {message}
+        <SymbolSearch
+          placeholder="Search company, ticker or ISIN (e.g., Apple, AAPL, US0378331005...)"
+          onSelect={addSelectedTicker}
+        />
+      </div>
+
+      {(loadingTicker || message) && (
+        <div className="mt-2 text-[12px] font-semibold">
+          {loadingTicker && (
+            <span className="text-zinc-500">Adding {loadingTicker}...</span>
+          )}
+
+          {message && (
+            <span className="text-emerald-700">{message}</span>
+          )}
         </div>
       )}
     </div>

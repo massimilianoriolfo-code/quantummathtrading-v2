@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { RefreshCw } from 'lucide-react'
 
 type Props = {
   tickers?: string[]
@@ -27,9 +28,7 @@ export default function RefreshAllWatchlistButton({ tickers = [] }: Props) {
 
         await fetch('/api/watchlist/refresh', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ticker }),
         })
 
@@ -47,46 +46,32 @@ export default function RefreshAllWatchlistButton({ tickers = [] }: Props) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+    <div className="flex flex-col items-end gap-1">
       <button
+        type="button"
         onClick={handleRefreshAll}
         disabled={loading || tickers.length === 0}
-        style={{
-          padding: '6px 10px',
-          fontSize: '12px',
-          fontWeight: 600,
-          borderRadius: '6px',
-          border: '1px solid #333',
-          background: loading ? '#ddd' : '#111',
-          color: loading ? '#555' : '#fff',
-          cursor: loading ? 'not-allowed' : 'pointer',
-        }}
+        className="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md border border-slate-500 bg-slate-600 px-4 text-[12px] font-semibold text-white shadow-[0_3px_8px_rgba(0,0,0,0.18)] transition-all duration-150 hover:-translate-y-[1px] hover:bg-amber-400 hover:shadow-[0_6px_12px_rgba(0,0,0,0.22)] active:translate-y-[2px] active:shadow-[0_1px_3px_rgba(0,0,0,0.18)] disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {loading ? `Refreshing ${done}/${total}` : 'Refresh All'}
+        <RefreshCw
+          size={16}
+          strokeWidth={2.25}
+          className={loading ? 'animate-spin text-white' : 'text-white'}
+        />
+        {loading ? `Refreshing ${done}/${total}` : 'Refresh All Watchlist'}
       </button>
 
       {loading && (
-        <div style={{ fontSize: '11px', color: '#555' }}>
-          {current && <div>Updating: {current}</div>}
-          <div
-            style={{
-              width: '160px',
-              height: '6px',
-              background: '#e5e5e5',
-              borderRadius: '999px',
-              overflow: 'hidden',
-              marginTop: '4px',
-            }}
-          >
+        <div className="w-[190px] text-right text-[11px] text-zinc-500">
+          {current && <div>Updating {current}</div>}
+
+          <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-zinc-200">
             <div
-              style={{
-                width: `${progress}%`,
-                height: '100%',
-                background: '#111',
-                transition: 'width 0.2s ease',
-              }}
+              className="h-full bg-zinc-500 transition-all"
+              style={{ width: `${progress}%` }}
             />
           </div>
+
           <div>{progress}% completed</div>
         </div>
       )}

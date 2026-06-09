@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import RefreshAllWatchlistButton from './RefreshAllWatchlistButton'
 import { currentUser } from '@clerk/nextjs/server'
 import Link from 'next/link'
@@ -5,7 +6,18 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import DeleteWatchlistButton from './DeleteWatchlistButton'
 import AddWatchlistTickerForm from './AddWatchlistTickerForm'
 import RefreshWatchlistTickerButton from './RefreshWatchlistTickerButton'
-
+import InfoTooltip from '@/components/InfoTooltip'
+import {
+  Apple,
+  BarChart3,
+  BookmarkCheck,
+  BriefcaseBusiness,
+  Eye,
+  LineChart,
+  RefreshCw,
+  Search,
+  ShieldCheck,
+} from 'lucide-react'
 
 function formatDate(value: string | null | undefined) {
   if (!value) return '-'
@@ -19,9 +31,27 @@ function formatDate(value: string | null | undefined) {
   }).format(new Date(value))
 }
 
+function formatMoney(value: number) {
+  return `$ ${value.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`
+}
+
+function formatPercent(value: number) {
+  return `${value.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}%`
+}
+
 function getAnalysisAgeBadge(value: string | null | undefined) {
   if (!value) {
-    return <span className="font-bold text-red-600">🔴 N/A</span>
+    return (
+      <span className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[11px] font-bold text-red-700">
+        N/A
+      </span>
+    )
   }
 
   const diffDays = Math.floor(
@@ -30,16 +60,103 @@ function getAnalysisAgeBadge(value: string | null | undefined) {
   )
 
   if (diffDays < 3) {
-    return <span className="font-bold text-green-600">🟢 {diffDays}d</span>
+    return (
+  <span className="text-[11px] font-semibold text-emerald-700">
+    {diffDays}d
+  </span>
+)
   }
 
   if (diffDays < 7) {
-    return <span className="font-bold text-yellow-600">🟡 {diffDays}d</span>
-  }
+    return (
+  <span className="text-[11px] font-semibold text-amber-700">
+    {diffDays}d
+  </span>
+)  }
 
-  return <span className="font-bold text-red-600">🔴 {diffDays}d</span>
+  return (
+  <span className="text-[11px] font-semibold text-red-700">
+    {diffDays}d
+  </span>
+)
 }
 
+function KpiCard({
+  label,
+  value,
+  tooltip,
+  icon,
+  iconBgClass,
+  valueClass = 'text-zinc-950',
+}: {
+  label: string
+  value: string
+  tooltip: string
+  icon: ReactNode
+  iconBgClass: string
+  valueClass?: string
+}) {
+  return (
+    <div className="grid min-h-[94px] grid-cols-[44px_1fr] items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3 shadow-sm">
+      <div
+        className={`flex h-10 w-10 items-center justify-center rounded-full ${iconBgClass}`}
+      >
+        {icon}
+      </div>
+
+      <div>
+        <div className="flex items-center gap-1 text-[12px] font-semibold leading-tight text-zinc-600">
+          {label}
+          <InfoTooltip text={tooltip} />
+        </div>
+
+        <div className={`mt-2 text-[17px] font-bold leading-tight ${valueClass}`}>
+          {value}
+        </div>
+      </div>
+    </div>
+  )
+}
+function TickerLogo({ ticker }: { ticker: string }) {
+  const symbol = ticker.toUpperCase()
+
+  if (symbol === 'AAPL') {
+    return <Apple size={18} className="text-black" />
+  }
+
+  if (symbol === 'MSFT') {
+    return (
+      <div className="grid h-4 w-4 grid-cols-2 gap-[1px]">
+        <span className="bg-red-500" />
+        <span className="bg-green-500" />
+        <span className="bg-blue-500" />
+        <span className="bg-yellow-400" />
+      </div>
+    )
+  }
+
+  if (symbol === 'NFLX') {
+    return (
+      <div className="text-[14px] font-black leading-none text-red-600">
+        N
+      </div>
+    )
+  }
+
+  if (symbol === 'BLK') {
+    return (
+      <div className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-900 text-[7px] font-bold text-white">
+        BLK
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-100 text-[9px] font-bold text-zinc-600">
+      {symbol.slice(0, 1)}
+    </div>
+  )
+}
 export default async function WatchlistPage() {
   const user = await currentUser()
 
@@ -67,9 +184,7 @@ export default async function WatchlistPage() {
         .eq('clerk_user_id', user.id)
     : { data: [] }
 
-  const portfolioTickerSet = new Set(
-    portfolio?.map((p) => p.ticker)
-  )
+  const portfolioTickerSet = new Set(portfolio?.map((p) => p.ticker))
 
   const latestSimulationMap = new Map()
 
@@ -80,9 +195,10 @@ export default async function WatchlistPage() {
   })
 
   const analyzedCount =
-    watchlist?.filter((item) =>
-      latestSimulationMap.has(item.ticker)
-    ).length || 0
+    watchlist?.filter((item) => latestSimulationMap.has(item.ticker)).length || 0
+
+  const inPortfolioCount =
+    watchlist?.filter((item) => portfolioTickerSet.has(item.ticker)).length || 0
 
   const latestWatchlistSnapshot =
     watchlist
@@ -91,11 +207,9 @@ export default async function WatchlistPage() {
       .sort()
       .reverse()[0] || null
 
-      const watchlistTickers =
-  watchlist?.map((item) => item.ticker) || []
+  const watchlistTickers = watchlist?.map((item) => item.ticker) || []
 
-const sortedWatchlist =
-  [...(watchlist || [])].sort((a, b) => {
+  const sortedWatchlist = [...(watchlist || [])].sort((a, b) => {
     const aSim = latestSimulationMap.get(a.ticker)
     const bSim = latestSimulationMap.get(b.ticker)
 
@@ -113,246 +227,246 @@ const sortedWatchlist =
   })
 
   return (
-    <main className="min-h-screen bg-zinc-100 p-6 text-zinc-950">
-      <div className="mx-auto max-w-7xl rounded-3xl border bg-white p-5 shadow-sm">
-        <div className="flex items-start justify-between gap-4 border-b pb-4">
+    <main className="min-h-screen bg-zinc-50 p-4 text-[12px] text-zinc-950">
+      <div className="mx-auto w-full rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+        <div className="flex items-start justify-between border-b border-zinc-200 pb-4">
           <div>
             <Link
               href="/dashboard"
-              className="text-xs font-bold uppercase tracking-wide text-zinc-400 hover:text-zinc-700"
+              className="text-xs font-bold uppercase tracking-wide text-zinc-500 hover:text-zinc-900"
             >
               ← Back to Control Center
             </Link>
 
-            <h1 className="mt-2 text-2xl font-bold tracking-tight">
-              Watchlist
-            </h1>
-
-            <p className="mt-1 text-sm text-zinc-500">
-              Monitored tickers with latest CRPM market snapshot.
-            </p>
+            <div className="mt-3 flex items-center gap-2">
+              <h1 className="text-3xl font-bold tracking-tight">Watchlist</h1>
+              <InfoTooltip text="Watchlist: monitored tickers with latest CRPM market snapshot, expected move and refresh actions." />
+            </div>
           </div>
 
           <Link
             href="/simulatore-pro"
-            className="rounded-xl bg-black px-4 py-2 text-xs font-bold text-white transition hover:opacity-90"
+            className="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md border border-slate-500 bg-slate-600 px-4 text-[12px] font-semibold text-white shadow-[0_3px_8px_rgba(0,0,0,0.18)] transition-all duration-150 hover:-translate-y-[1px] hover:bg-amber-400 hover:shadow-[0_6px_12px_rgba(0,0,0,0.22)] active:translate-y-[2px] active:shadow-[0_1px_3px_rgba(0,0,0,0.18)] disabled:cursor-not-allowed disabled:opacity-50"
           >
+            <BarChart3 size={16} />
             Open Simulator
           </Link>
         </div>
 
-        <div className="mt-4 grid gap-3 md:grid-cols-4">
-          <div className="rounded-2xl border bg-zinc-50 p-4">
-            <div className="text-xs font-semibold uppercase text-zinc-500">
-              Watchlist Tickers
-            </div>
-            <div className="mt-1 text-xl font-bold">
-              {watchlist?.length || 0}
-            </div>
-          </div>
+        <div className="mt-5 grid gap-4 md:grid-cols-4">
+          <KpiCard
+            label="Watchlist"
+            value={`${watchlist?.length || 0}`}
+            tooltip="Watchlist: number of tickers currently monitored."
+            icon={<Eye size={22} className="text-slate-600" />}
+            iconBgClass="bg-slate-100"
+          />
 
-          <div className="rounded-2xl border bg-zinc-50 p-4">
-            <div className="text-xs font-semibold uppercase text-zinc-500">
-              Analyzed
-            </div>
-            <div className="mt-1 text-xl font-bold">
-              {analyzedCount}
-            </div>
-          </div>
+          <KpiCard
+            label="Analyzed"
+            value={`${analyzedCount}`}
+            tooltip="Analyzed: number of watchlist tickers with at least one CRPM snapshot."
+            icon={<LineChart size={22} className="text-emerald-700" />}
+            iconBgClass="bg-emerald-50"
+          />
 
-          <div className="rounded-2xl border bg-zinc-50 p-4">
-            <div className="text-xs font-semibold uppercase text-zinc-500">
-              Latest Snapshot
-            </div>
-            <div className="mt-1 text-sm font-bold">
-              {formatDate(latestWatchlistSnapshot)}
-            </div>
-          </div>
+          <KpiCard
+            label="Latest Snapshot"
+            value={formatDate(latestWatchlistSnapshot)}
+            tooltip="Latest snapshot: most recent CRPM analysis date and time among watchlist tickers."
+            icon={<RefreshCw size={22} className="text-stone-700" />}
+            iconBgClass="bg-stone-100"
+          />
 
-          <div className="rounded-2xl border bg-zinc-50 p-4">
-            <div className="text-xs font-semibold uppercase text-zinc-500">
-              Opportunity Rank
-            </div>
-            <div className="mt-1 text-xl font-bold text-zinc-400">
-              Coming Soon
-            </div>
-          </div>
+          <KpiCard
+            label="In Portfolio"
+            value={`${inPortfolioCount}`}
+            tooltip="In portfolio: watchlist tickers already present in your portfolio."
+            icon={<BriefcaseBusiness size={22} className="text-amber-700" />}
+            iconBgClass="bg-amber-50"
+          />
         </div>
 
-        <div className="mt-4 rounded-2xl border bg-zinc-50 p-4">
-          <h2 className="text-sm font-bold">Add Ticker</h2>
-          <p className="mt-1 text-xs text-zinc-500">
-            Add a ticker directly to the watchlist.
-          </p>
+        <div className="mt-4 rounded-xl border border-zinc-200 bg-white">
           <AddWatchlistTickerForm />
-        </div>
 
-        <div className="mt-4 rounded-2xl border bg-white">
-          <div className="flex items-center justify-between border-b px-4 py-3">
-  <div>
-    <h2 className="text-sm font-bold">
-      Watchlist Tickers
-    </h2>
+          <div className="border-t border-zinc-200">
+            <div className="flex items-center justify-between py-2.5 pl-4 pr-2">
+              <div>
+                <div className="flex items-center gap-2">
+                  <BookmarkCheck size={20} className="text-slate-600" />
+                  <h2 className="text-lg font-bold">Watchlist Tickers</h2>
+                  <InfoTooltip text="Watchlist tickers: latest available CRPM snapshot for each monitored ticker." />
+                </div>
+              </div>
 
-    <p className="mt-1 text-xs text-zinc-500">
-      Latest available CRPM snapshot for each monitored ticker.
-    </p>
+              <RefreshAllWatchlistButton tickers={watchlistTickers} />
+            </div>
+
+            {watchlist && watchlist.length > 0 ? (
+              <div className="max-h-[460px] overflow-auto">
+                <table className="w-full min-w-[1040px] table-fixed border-collapse text-[12px]">
+                  <thead className="sticky top-0 z-10 bg-zinc-50 text-[10px] text-zinc-700">
+                    <tr className="border-y border-zinc-200">
+                      <th className="w-[8%] px-2 py-2 text-left font-semibold uppercase">
+                        <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                          Ticker
+                          <InfoTooltip text="Ticker: ticker symbol of the monitored security." />
+                        </span>
+                      </th>
+
+                      <th className="w-[10%] px-2 py-2 text-left font-semibold uppercase">
+                        <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                          Company
+                          <InfoTooltip text="Company: company name associated with the ticker." />
+                        </span>
+                      </th>
+
+                      <th className="w-[6%] px-2 py-2 text-right font-semibold uppercase">
+                        <span className="inline-flex items-center justify-center gap-1 whitespace-nowrap">
+                          Port.
+                          <InfoTooltip text="Portfolio flag: indicates whether this ticker is already in your portfolio." />
+                        </span>
+                      </th>
+
+                      <th className="w-[8%] px-2 py-2 text-right font-semibold uppercase">
+                        <span className="inline-flex items-center justify-end gap-1 whitespace-nowrap">
+                          Spot
+                          <InfoTooltip text="Spot: latest underlying price from the most recent CRPM analysis." />
+                        </span>
+                      </th>
+
+                      <th className="w-[8%] px-2 py-2 text-right font-semibold uppercase">
+                        <span className="inline-flex items-center justify-end gap-1 whitespace-nowrap">
+                          IV
+                          <InfoTooltip text="IV: implied volatility from the latest available CRPM snapshot." />
+                        </span>
+                      </th>
+
+                      <th className="w-[14%] px-2 py-2 text-right font-semibold uppercase">
+                        <span className="inline-flex items-center justify-end gap-1 whitespace-nowrap">
+                          CRPM Expected Move
+                          <InfoTooltip text="Expected move: estimated move over the shown DTE horizon, also expressed as percentage of spot." />
+                        </span>
+                      </th>
+
+                      <th className="w-[10%] px-2 py-2 text-right font-semibold uppercase">
+                        <span className="inline-flex items-right justify-end gap-1 whitespace-nowrap">
+                          Analysis
+                          <InfoTooltip text="Analysis: date and time of the latest CRPM analysis for this ticker." />
+                        </span>
+                      </th>
+
+                      <th className="w-[7%] px-2 py-2 text-center font-semibold uppercase">
+                        <span className="inline-flex items-center justify-center gap-1 whitespace-nowrap">
+                          Age
+                          <InfoTooltip text="Age: freshness of the latest analysis. Green is recent, amber is aging, red is old or missing." />
+                        </span>
+                      </th>
+
+                      <th className="w-[9%] py-2 pl-2 pr-2 text-center font-semibold uppercase">
+                        <span className="inline-flex items-center justify-end gap-1 whitespace-nowrap">
+                          Actions
+                          <InfoTooltip text="Actions: analyze, refresh or remove this ticker." />
+                        </span>
+                      </th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {sortedWatchlist.map((item) => {
+                      const latest = latestSimulationMap.get(item.ticker)
+                      const inPortfolio = portfolioTickerSet.has(item.ticker)
+
+                      const expectedMovePercent =
+                        latest && Number(latest.spot) !== 0
+                          ? (Number(latest.expected_move) / Number(latest.spot)) * 100
+                          : 0
+
+                      return (
+                        <tr
+                          key={item.id}
+                          className="border-b border-zinc-200 hover:bg-zinc-50"
+                        >
+                          <td className="px-2 py-2 font-bold">
+  <div className="flex items-center gap-2">
+    <TickerLogo ticker={item.ticker} />
+    <span>{item.ticker}</span>
   </div>
+</td>
 
-<RefreshAllWatchlistButton tickers={watchlist.map((item) => item.ticker)} />
-  
-</div>
+                          <td className="truncate px-2 py-2 text-zinc-700">
+                            {item.company || '-'}
+                          </td>
 
-          {watchlist && watchlist.length > 0 ? (
-            <div className="max-h-[420px] overflow-auto">
-              <table className="w-full table-fixed text-left text-[9px]">
-                <thead className="sticky top-0 z-10 bg-zinc-100 text-zinc-500">
-                  <tr className="border-b">
-                    <th className="w-[8%] px-2 py-2 font-bold uppercase">
-                      Ticker
-                    </th>
-                    <th className="w-[17%] px-2 py-2 font-bold uppercase">
-                      Company
-                    </th>
-                    <th className="w-[7%] px-2 py-2 font-bold uppercase">
-                      In Portfolio
-                    </th>
-                    <th className="w-[9%] px-2 py-2 font-bold uppercase">
-                      Spot
-                    </th>
-                    <th className="w-[8%] px-2 py-2 font-bold uppercase">
-                      IV
-                    </th>
-                    <th className="w-[17%] px-2 py-2 font-bold uppercase">
-                      Exp. Move
-                    </th>
-                    <th className="w-[10%] px-2 py-2 font-bold uppercase">
-                      Analysis
-                    </th>
-                    <th className="w-[8%] px-2 py-2 font-bold uppercase">
-                      Age
-                    </th>
-                    <th className="w-[16%] px-2 py-2 font-bold uppercase">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
+                          <td className="px-2 py-2 text-center">
+                            {inPortfolio ? (
+                            <span className="text-[11px] font-semibold text-emerald-700">
+  Yes
+</span>
+                            ) : (
+                              <span className="text-zinc-400">-</span>
+                            )}
+                          </td>
 
-                <tbody>
-                  {sortedWatchlist.map((item) => {
-                    const latest =
-                      latestSimulationMap.get(item.ticker)
+                          <td className="whitespace-nowrap px-2 py-2 text-right font-bold">
+                            {latest ? formatMoney(Number(latest.spot)) : '-'}
+                          </td>
 
-                    const inPortfolio =
-                      portfolioTickerSet.has(item.ticker)
+                          <td className="whitespace-nowrap px-2 py-2 text-right">
+                            {latest ? formatPercent(Number(latest.iv)) : '-'}
+                          </td>
 
-                    const expectedMovePercent =
-                      latest && Number(latest.spot) !== 0
-                        ? (Number(latest.expected_move) /
-                            Number(latest.spot)) *
-                          100
-                        : 0
+                         <td className="whitespace-nowrap px-2 py-2 text-right">
+  {latest ? (
+    <span className="font-semibold">
+      ± {formatMoney(Number(latest.expected_move))}
+      <span className="ml-1 text-[11px] font-medium text-zinc-500">
+        ({formatPercent(expectedMovePercent)} / {latest.dte}D)
+      </span>
+    </span>
+  ) : (
+    '-'
+  )}
+</td>
 
-                    return (
-                      <tr
-                        key={item.id}
-                        className="h-10 border-b last:border-0 hover:bg-zinc-50"
-                      >
-                        <td className="px-2 py-2 font-bold">
-                          {item.ticker}
-                        </td>
+                          <td className="whitespace-nowrap px-2 py-2 text-right text-zinc-500">
+                            {latest ? formatDate(latest.created_at) : 'N/A'}
+                          </td>
 
-                        <td className="truncate px-2 py-2 text-zinc-600">
-                          {item.company || '-'}
-                        </td>
+                          <td className="px-2 py-2 text-center">
+                            {getAnalysisAgeBadge(latest?.created_at)}
+                          </td>
 
-                        <td className="px-2 py-2">
-                          {inPortfolio && (
-  <span
-    style={{
-      marginLeft: '6px',
-      padding: '2px 6px',
-      fontSize: '10px',
-      fontWeight: 700,
-      borderRadius: '999px',
-      background: '#dcfce7',
-      color: '#166534',
-      border: '1px solid #86efac',
-      whiteSpace: 'nowrap',
-    }}
-  >
-    Yes
-  </span>
-)}
-                        </td>
+                          <td className="whitespace-nowrap py-2 pl-2 pr-2 text-right">
+                            <div className="flex justify-end gap-1">
+                              
 
-                        <td className="px-2 py-2 font-bold">
-                          {latest
-                            ? `$${Number(latest.spot).toFixed(2)}`
-                            : '-'}
-                        </td>
+                              <RefreshWatchlistTickerButton ticker={item.ticker} />
 
-                        <td className="px-2 py-2">
-                          {latest
-                            ? `${Number(latest.iv).toFixed(2)}%`
-                            : '-'}
-                        </td>
+                              <DeleteWatchlistButton
+                                watchlistId={item.id}
+                                ticker={item.ticker}
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="flex flex-1 items-center justify-center p-8 text-sm text-zinc-500">
+                No watchlist tickers saved yet.
+              </div>
+            )}
+          </div>
 
-                        <td className="px-2 py-2 leading-tight">
-                          {latest ? (
-                            <>
-                              <div>
-                                ${Number(latest.expected_move).toFixed(2)}
-                              </div>
-                              <div className="text-zinc-500">
-                                {expectedMovePercent.toFixed(2)}% / {latest.dte}D
-                              </div>
-                            </>
-                          ) : (
-                            '-'
-                          )}
-                        </td>
-
-                        <td className="px-2 py-2 text-zinc-500">
-                          {latest
-                            ? formatDate(latest.created_at)
-                            : 'N/A'}
-                        </td>
-
-                        <td className="px-2 py-2">
-                          {getAnalysisAgeBadge(latest?.created_at)}
-                        </td>
-
-                        <td className="px-2 py-2">
-                          <div className="flex gap-1 whitespace-nowrap">
-                            <Link
-                              href={`/simulatore-pro?ticker=${item.ticker}&returnTo=/dashboard/watchlist`}
-                              className="rounded bg-zinc-900 px-1.5 py-0.5 text-[9px] font-bold text-white"
-                            >
-                              Analyze
-                            </Link>
-
-                            <RefreshWatchlistTickerButton
-                              ticker={item.ticker}
-                            />
-
-                            <DeleteWatchlistButton
-                              watchlistId={item.id}
-                              ticker={item.ticker}
-                            />
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="flex flex-1 items-center justify-center p-8 text-sm text-zinc-500">
-              No watchlist tickers saved yet.
-            </div>
-          )}
+          <div className="flex items-center justify-center gap-2 border-t border-zinc-200 px-4 py-3 text-xs text-zinc-500">
+            <InfoTooltip text="Disclaimer: data shown for educational purposes only. This platform does not provide financial advice." />
+            Data for educational purposes only. Not financial advice. Market data may be delayed.
+          </div>
         </div>
       </div>
     </main>

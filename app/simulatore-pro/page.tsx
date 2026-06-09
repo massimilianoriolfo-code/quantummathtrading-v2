@@ -195,11 +195,11 @@ export default function SimulatorPage() {
     setTicker(cleanTicker)
 
     if (refresh) {
-      ;(async () => {
-        await runAnalysis(cleanTicker)
-        window.location.href = '/dashboard'
-      })()
-    }
+  ;(async () => {
+    await runAnalysis(cleanTicker)
+    window.location.href = returnTarget || '/dashboard'
+  })()
+}
   }
 }, [])
   async function addToWatchlist() {
