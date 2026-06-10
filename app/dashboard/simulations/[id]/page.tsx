@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import { auth } from '@clerk/nextjs/server'
-import { redirect } from 'next/navigation'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
 function money(value: number) {
+  if (!Number.isFinite(value)) return '-'
+
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
@@ -11,31 +12,73 @@ function money(value: number) {
   }).format(value)
 }
 
+function parseResult(raw: any) {
+  if (!raw) return {}
+
+  if (typeof raw === 'string') {
+    try {
+      return JSON.parse(raw)
+    } catch {
+      return {}
+    }
+  }
+
+  return raw
+}
+
+function normalizeMachines(result: any) {
+  const machines =
+    result?.machines ||
+    result?.crpmMachines ||
+    result?.CRPMMachines ||
+    result?.crpm_machines ||
+    result?.analysis?.machines ||
+    result?.result?.machines ||
+    []
+
+  if (Array.isArray(machines)) {
+    return machines.slice(0, 5)
+  }
+
+  if (machines && typeof machines === 'object') {
+    return Object.values(machines).slice(0, 5)
+  }
+
+  return []
+}
+
 export default async function SimulationDetailPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
-  const { userId } = auth()
+  const { id } = await params
+  const { userId } = await auth()
 
   if (!userId) {
-    redirect('/sign-in')
+    return (
+      <div className="p-6 text-sm">
+        NO USER ID ON SIMULATION DETAIL PAGE
+      </div>
+    )
   }
 
   const { data: simulation } = await supabaseAdmin
     .from('simulations')
     .select('*')
-    .eq('id', params.id)
-    .eq('clerk_user_id', userId)
+    .eq('id', id)
     .single()
 
   if (!simulation) {
-    redirect('/dashboard/simulations')
+    return (
+      <div className="p-6 text-sm">
+        SIMULATION NOT FOUND
+      </div>
+    )
   }
 
-  const result = simulation.result || {}
-
-  const machines = result.machines || []
+  const result = parseResult(simulation.result)
+  const machines = normalizeMachines(result)
 
   return (
     <div className="mx-auto max-w-7xl p-6">
@@ -75,7 +118,9 @@ export default async function SimulationDetailPage({
             IV
           </div>
           <div className="mt-2 text-3xl font-bold">
-            {Number(simulation.iv).toFixed(2)}%
+            {Number.isFinite(Number(simulation.iv))
+              ? `${Number(simulation.iv).toFixed(2)}%`
+              : '-'}
           </div>
         </div>
 
@@ -87,12 +132,14 @@ export default async function SimulationDetailPage({
             ± {money(Number(simulation.expected_move))}
           </div>
           <div className="text-sm text-zinc-500">
-            {(
-              (Number(simulation.expected_move) /
-                Number(simulation.spot)) *
-              100
-            ).toFixed(2)}
-            %
+            {Number(simulation.spot) > 0 &&
+            Number.isFinite(Number(simulation.expected_move))
+              ? `${(
+                  (Number(simulation.expected_move) /
+                    Number(simulation.spot)) *
+                  100
+                ).toFixed(2)}%`
+              : '-'}
           </div>
         </div>
 
@@ -101,7 +148,7 @@ export default async function SimulationDetailPage({
             DTE
           </div>
           <div className="mt-2 text-3xl font-bold">
-            {simulation.dte}
+            {simulation.dte ?? '-'}
           </div>
         </div>
 
@@ -110,9 +157,9 @@ export default async function SimulationDetailPage({
             Snapshot
           </div>
           <div className="mt-2 text-lg font-bold">
-            {new Date(
-              simulation.created_at
-            ).toLocaleString()}
+            {simulation.created_at
+              ? new Date(simulation.created_at).toLocaleString()
+              : '-'}
           </div>
         </div>
       </div>
@@ -122,19 +169,28 @@ export default async function SimulationDetailPage({
           CRPM Machines
         </div>
 
-        <div className="space-y-4">
-          {machines.map(
-            (machine: any, index: number) => (
+        {machines.length === 0 ? (
+          <div className="text-sm text-zinc-500">
+            No CRPM Machines found in saved result.
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {machines.map((machine: any, index: number) => (
               <div
                 key={index}
                 className="rounded-lg border p-4"
               >
                 <h3 className="text-lg font-bold">
-                  {machine.name}
+                  {machine.name ||
+                    machine.title ||
+                    `Machine ${index + 1}`}
                 </h3>
 
                 <p className="mt-1 text-zinc-600">
-                  {machine.description}
+                  {machine.description ||
+                    machine.summary ||
+                    machine.explanation ||
+                    '-'}
                 </p>
 
                 <div className="mt-4 grid gap-4 md:grid-cols-5">
@@ -143,7 +199,7 @@ export default async function SimulationDetailPage({
                       Action
                     </div>
                     <div className="font-semibold">
-                      {machine.action}
+                      {machine.action ?? '-'}
                     </div>
                   </div>
 
@@ -152,7 +208,7 @@ export default async function SimulationDetailPage({
                       Strike
                     </div>
                     <div className="font-semibold">
-                      {machine.strike}
+                      {machine.strike ?? '-'}
                     </div>
                   </div>
 
@@ -161,7 +217,9 @@ export default async function SimulationDetailPage({
                       Premium
                     </div>
                     <div className="font-semibold">
-                      ${machine.premium}
+                      {machine.premium !== undefined
+                        ? `$${machine.premium}`
+                        : '-'}
                     </div>
                   </div>
 
@@ -170,7 +228,9 @@ export default async function SimulationDetailPage({
                       Max Profit
                     </div>
                     <div className="font-semibold">
-                      {machine.maxProfit}
+                      {machine.maxProfit ??
+                        machine.max_profit ??
+                        '-'}
                     </div>
                   </div>
 
@@ -179,18 +239,24 @@ export default async function SimulationDetailPage({
                       Max Risk
                     </div>
                     <div className="font-semibold">
-                      {machine.maxRisk}
+                      {machine.maxRisk ??
+                        machine.max_risk ??
+                        '-'}
                     </div>
                   </div>
                 </div>
 
                 <div className="mt-3 text-sm text-zinc-500">
-                  {machine.note}
+                  {machine.note || machine.notes || ''}
                 </div>
+
+                <pre className="mt-4 max-h-64 overflow-auto rounded-md bg-zinc-50 p-3 text-xs text-zinc-600">
+                  {JSON.stringify(machine, null, 2)}
+                </pre>
               </div>
-            )
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
