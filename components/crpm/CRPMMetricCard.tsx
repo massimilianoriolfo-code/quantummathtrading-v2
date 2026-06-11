@@ -15,26 +15,26 @@ export default function CRPMMetricCard({
 }: CRPMMetricCardProps) {
   return (
     <div
-      className={`rounded-md border border-zinc-700/80 bg-white/[0.03] px-3 py-3 ${className}`}
+      className={`rounded-md border border-[var(--crpm-border)] bg-[var(--crpm-soft)] px-3 py-3 ${className}`}
     >
       <div className="flex items-center gap-3">
         {icon ? (
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-zinc-700 bg-white/[0.04] text-zinc-300">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-[var(--crpm-border)] bg-[var(--crpm-soft)] text-[var(--crpm-muted)]">
             {icon}
           </div>
         ) : null}
 
         <div>
-          <div className="text-[10px] font-semibold uppercase text-zinc-400">
+          <div className="text-[10px] font-semibold uppercase text-[var(--crpm-muted)]">
             {label}
           </div>
 
-          <div className="mt-1 text-xl font-black text-white">
+          <div className="mt-1 text-xl font-black text-[var(--crpm-text)]">
             {value}
           </div>
 
           {subvalue ? (
-            <div className="text-[11px] font-medium text-zinc-400">
+            <div className="text-[11px] font-medium text-[var(--crpm-muted)]">
               {subvalue}
             </div>
           ) : null}

@@ -9,7 +9,7 @@ export default function CRPMPanel({
 }: CRPMPanelProps) {
   return (
     <section
-      className={`rounded-lg border border-zinc-800 bg-gradient-to-br from-[#12171d] to-[#0d1116] shadow-[0_0_30px_rgba(0,0,0,0.30)] ${className}`}
+      className={`rounded-lg border border-[var(--crpm-border)] bg-gradient-to-br from-[var(--crpm-panel)] to-[var(--crpm-panel-2)] shadow-[0_0_30px_rgba(0,0,0,0.18)] ${className}`}
     >
       {children}
     </section>
