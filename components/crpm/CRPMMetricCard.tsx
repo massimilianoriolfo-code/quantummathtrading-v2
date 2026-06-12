@@ -19,22 +19,22 @@ export default function CRPMMetricCard({
     >
       <div className="flex items-center gap-3">
         {icon ? (
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-[var(--crpm-border)] bg-[var(--crpm-soft)] text-[var(--crpm-muted)]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-[var(--crpm-border)] bg-[var(--crpm-panel)] text-[var(--crpm-muted)]">
             {icon}
           </div>
         ) : null}
 
         <div>
-          <div className="text-[10px] font-semibold uppercase text-[var(--crpm-muted)]">
+          <div className="text-[10px] font-bold uppercase tracking-wide text-[var(--crpm-faint)]">
             {label}
           </div>
 
-          <div className="mt-1 text-xl font-black text-[var(--crpm-text)]">
+          <div className="mt-1 text-xl font-black text-[var(--crpm-heading)]">
             {value}
           </div>
 
           {subvalue ? (
-            <div className="text-[11px] font-medium text-[var(--crpm-muted)]">
+            <div className="text-[11px] font-semibold text-[var(--crpm-muted)]">
               {subvalue}
             </div>
           ) : null}

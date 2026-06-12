@@ -1,232 +1,927 @@
 import Link from 'next/link'
 import { currentUser } from '@clerk/nextjs/server'
-import DashboardNav from '@/components/dashboard/DashboardNav'
+import CRPMBadge from '@/components/crpm/CRPMBadge'
+import CRPMLogo from '@/components/crpm/CRPMLogo'
+import CRPMPanel from '@/components/crpm/CRPMPanel'
+import { CRPMThemeProvider } from '@/components/crpm/CRPMThemeProvider'
+import CRPMThemeToggle from '@/components/crpm/CRPMThemeToggle'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
-import { BarChart3, Clock3, Database, Search } from 'lucide-react'
+
+const navItems = [
+  { label: 'Dashboard', href: '/dashboard' },
+  { label: 'Portfolio', href: '/dashboard/portfolio' },
+  { label: 'Watchlist', href: '/dashboard/watchlist' },
+  { label: 'Simulator', href: '/simulatore-pro' },
+] as const
+
+type PayoffKind = 'longCall' | 'shortPut' | 'marriedPut' | 'coveredCall' | 'assigned'
+
+type MachineVisual = {
+  tone: 'green' | 'red' | 'blue' | 'purple' | 'yellow'
+  tag: string
+  text: string
+  line: string
+  border: string
+  bg: string
+  active: string
+  payoffKind: PayoffKind
+  icon: React.ReactNode
+}
 
 function formatDate(value: string | null | undefined) {
   if (!value) return '-'
+
   return new Intl.DateTimeFormat('it-IT', {
     day: '2-digit',
     month: '2-digit',
-    year: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
   }).format(new Date(value))
 }
 
+function formatDateTime(value: string | null | undefined) {
+  if (!value) return '-'
+
+  return new Intl.DateTimeFormat('it-IT', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  }).format(new Date(value))
+}
+
 function formatMoney(value: number) {
-  return `$ ${value.toLocaleString('en-US', {
+  if (!Number.isFinite(value)) return '-'
+
+  return `$${value.toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`
 }
 
 function formatPercent(value: number) {
+  if (!Number.isFinite(value)) return '-'
+
   return `${value.toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}%`
 }
 
-export default async function SimulationsHistoryPage() {
+function parseResult(raw: any) {
+  if (!raw) return {}
+
+  if (typeof raw === 'string') {
+    try {
+      return JSON.parse(raw)
+    } catch {
+      return {}
+    }
+  }
+
+  return raw
+}
+
+function normalizeMachines(result: any) {
+  const machines =
+    result?.machines ||
+    result?.crpmMachines ||
+    result?.CRPMMachines ||
+    result?.crpm_machines ||
+    result?.analysis?.machines ||
+    result?.result?.machines ||
+    []
+
+  if (Array.isArray(machines)) return machines.slice(0, 5)
+  if (machines && typeof machines === 'object') return Object.values(machines).slice(0, 5)
+
+  return []
+}
+
+function valueOrDash(value: any) {
+  if (value === null || value === undefined || value === '') return '-'
+  return String(value)
+}
+
+function cleanMachineName(value: string) {
+  return value
+    .replace(/^Machine\s*\d+\s*:\s*/i, '')
+    .replace('Assigned Short Put + Covered Call', 'Assigned Strategy')
+}
+
+function machineVisual(action: any): MachineVisual {
+  const text = String(action || '').toUpperCase()
+
+  if (text.includes('SELL PUT')) {
+    return {
+      tone: 'red',
+      tag: 'INCOME',
+      text: 'text-rose-300 data-[crpm-theme=light]:text-rose-700',
+      line: 'stroke-rose-300 data-[crpm-theme=light]:stroke-rose-700',
+      border: 'border-rose-400/45',
+      bg: 'bg-rose-500/[0.035]',
+      active: 'shadow-[inset_2px_0_0_rgb(251,113,133)]',
+      payoffKind: 'shortPut',
+      icon: <PutIncomeIcon />,
+    }
+  }
+
+  if (text.includes('BUY PUT')) {
+    return {
+      tone: 'blue',
+      tag: 'PROTECTION',
+      text: 'text-sky-300 data-[crpm-theme=light]:text-sky-700',
+      line: 'stroke-sky-300 data-[crpm-theme=light]:stroke-sky-700',
+      border: 'border-sky-400/45',
+      bg: 'bg-sky-500/[0.035]',
+      active: 'shadow-[inset_2px_0_0_rgb(56,189,248)]',
+      payoffKind: 'marriedPut',
+      icon: <ProtectionIcon />,
+    }
+  }
+
+  if (text.includes('SELL CALL')) {
+    return {
+      tone: 'purple',
+      tag: 'YIELD',
+      text: 'text-violet-300 data-[crpm-theme=light]:text-violet-700',
+      line: 'stroke-violet-300 data-[crpm-theme=light]:stroke-violet-700',
+      border: 'border-violet-400/45',
+      bg: 'bg-violet-500/[0.035]',
+      active: 'shadow-[inset_2px_0_0_rgb(167,139,250)]',
+      payoffKind: 'coveredCall',
+      icon: <YieldIcon />,
+    }
+  }
+
+  if (text.includes('COMBINED')) {
+    return {
+      tone: 'yellow',
+      tag: 'NEUTRAL',
+      text: 'text-amber-300 data-[crpm-theme=light]:text-amber-800',
+      line: 'stroke-amber-300 data-[crpm-theme=light]:stroke-amber-800',
+      border: 'border-amber-400/50',
+      bg: 'bg-amber-500/[0.035]',
+      active: 'shadow-[inset_2px_0_0_rgb(251,191,36)]',
+      payoffKind: 'assigned',
+      icon: <BalanceIcon />,
+    }
+  }
+
+  return {
+    tone: 'green',
+    tag: 'BULLISH',
+    text: 'text-emerald-300 data-[crpm-theme=light]:text-emerald-700',
+    line: 'stroke-emerald-300 data-[crpm-theme=light]:stroke-emerald-700',
+    border: 'border-emerald-400/45',
+    bg: 'bg-emerald-500/[0.035]',
+    active: 'shadow-[inset_2px_0_0_rgb(52,211,153)]',
+    payoffKind: 'longCall',
+    icon: <DirectionalIcon />,
+  }
+}
+
+export default async function SimulationsHistoryPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ selected?: string; machine?: string }>
+}) {
   const user = await currentUser()
+  const resolvedSearchParams = searchParams ? await searchParams : {}
+  const selectedId = resolvedSearchParams?.selected || null
+  const selectedMachineIndex =
+    resolvedSearchParams?.machine !== undefined
+      ? Math.max(0, Number(resolvedSearchParams.machine))
+      : -1
 
   const { data: simulations } = user
     ? await supabaseAdmin
         .from('simulations')
-        .select('id, ticker, company, spot, iv, expected_move, dte, created_at')
+        .select('*')
         .eq('clerk_user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(100)
     : { data: [] }
 
-  const total = simulations?.length || 0
-  const uniqueTickers = new Set(simulations?.map((s) => s.ticker)).size
-  const latestSnapshot = simulations?.[0]?.created_at || null
+  const rows = simulations || []
+  const total = rows.length
+  const uniqueTickers = new Set(rows.map((s) => s.ticker)).size
+
+  const selectedSimulation =
+    rows.find((simulation) => simulation.id === selectedId) ||
+    rows[0] ||
+    null
+
+  const selectedResult = parseResult(selectedSimulation?.result)
+  const selectedMachines = normalizeMachines(selectedResult)
+
+  const selectedSpot = Number(selectedSimulation?.spot)
+  const selectedExpectedMove = Number(selectedSimulation?.expected_move)
+  const selectedExpectedMovePct =
+    selectedSpot > 0 && Number.isFinite(selectedExpectedMove)
+      ? (selectedExpectedMove / selectedSpot) * 100
+      : 0
 
   return (
-    <main className="min-h-screen bg-zinc-100 p-4 text-zinc-950 md:p-6">
-      <div className="mx-auto max-w-7xl">
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-          <div className="border-b border-zinc-200 pb-4">
-            <Link
-              href="/dashboard"
-              className="text-xs font-bold uppercase tracking-wide text-zinc-500 hover:text-zinc-900"
-            >
-              ← Back to Control Center
-            </Link>
-
-            <div className="mt-3">
-              <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-zinc-400">
+    <CRPMThemeProvider>
+      <main className="h-screen overflow-visible bg-[var(--crpm-bg)] p-4 text-[var(--crpm-text)]">
+        <div className="mx-auto flex h-full max-w-[1920px] flex-col gap-3">
+          <header className="flex shrink-0 items-center justify-between gap-4">
+            <div>
+              <div className="text-[10px] font-black uppercase tracking-[0.28em] text-[var(--crpm-faint)]">
                 QuantumMathTrading
-              </p>
-
-              <h1 className="mt-2 text-3xl font-bold tracking-tight">
-                Simulations History
+              </div>
+              <h1 className="text-2xl font-black leading-tight tracking-tight text-[var(--crpm-heading)]">
+                Simulations History & Detail
               </h1>
-
-              <p className="mt-1 max-w-3xl text-sm text-zinc-500">
-                Historical archive of saved{' '}
-                <span className="font-bold text-slate-700">
-                  Calculated Risk and Profit Machines (CRPM)
-                </span>{' '}
-                snapshots, including spot price, implied volatility, expected move and analysis timestamp.
-              </p>
             </div>
 
-            <DashboardNav active="dashboard" />
-          </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <nav className="hidden items-center gap-2 lg:flex">
+                {navItems.map((item) => {
+                  const isActive = item.label === 'Dashboard'
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={
+                        isActive
+                          ? 'inline-flex h-9 items-center justify-center rounded-md border border-[var(--crpm-blue)] bg-[var(--crpm-blue)]/10 px-4 text-[12px] font-black text-[var(--crpm-blue)]'
+                          : 'inline-flex h-9 items-center justify-center rounded-md border border-[var(--crpm-border)] bg-[var(--crpm-soft)] px-4 text-[12px] font-black text-[var(--crpm-muted)] transition hover:text-[var(--crpm-heading)]'
+                      }
+                    >
+                      {item.label}
+                    </Link>
+                  )
+                })}
+              </nav>
 
-          <div className="mt-4 grid gap-3 md:grid-cols-3">
-            <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-[11px] font-bold uppercase tracking-wide text-zinc-500">
-                    CRPM Analysis
-                  </div>
-                  <div className="mt-1 text-[20px] font-bold">
-                    {total} Snapshots
+              <CRPMThemeToggle />
+            </div>
+          </header>
+
+          <div className="grid min-h-0 flex-1 gap-3 xl:grid-cols-[0.40fr_0.60fr]">
+            <section className="flex min-h-0 flex-col gap-2">
+              <CRPMPanel className="shrink-0 px-3 py-2">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-black text-[var(--crpm-heading)]">
+                    Saved CRPM Snapshots
+                  </h2>
+                  <div className="text-[11px] font-bold text-[var(--crpm-muted)]">
+                    {total} snapshots · {uniqueTickers} tickers
                   </div>
                 </div>
-                <Database size={20} className="text-slate-500" />
-              </div>
-            </div>
+              </CRPMPanel>
 
-            <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-[11px] font-bold uppercase tracking-wide text-zinc-500">
-                    Unique Tickers
-                  </div>
-                  <div className="mt-1 text-[20px] font-bold">
-                    {uniqueTickers}
-                  </div>
-                </div>
-                <Search size={20} className="text-slate-500" />
-              </div>
-            </div>
+              <CRPMPanel className="flex min-h-0 flex-1 flex-col overflow-visible">
+                {rows.length > 0 ? (
+                  <div className="min-h-0 flex-1 overflow-auto">
+                    <div className="sticky top-0 z-10 grid grid-cols-[72px_86px_70px_106px_90px_42px] border-b border-[var(--crpm-border)] bg-[var(--crpm-panel-2)] px-3 py-2 text-[9px] font-black uppercase tracking-wide text-[var(--crpm-faint)]">
+                      <div>Ticker</div>
+                      <div className="text-right">Spot</div>
+                      <div className="text-right">IV</div>
+                      <div className="text-right">EM</div>
+                      <div className="text-right">Time</div>
+                      <div className="text-right">DTE</div>
+                    </div>
 
-            <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-[11px] font-bold uppercase tracking-wide text-zinc-500">
-                    Latest Snapshot
-                  </div>
-                  <div className="mt-1 text-[20px] font-bold">
-                    {formatDate(latestSnapshot)}
-                  </div>
-                </div>
-                <Clock3 size={20} className="text-slate-500" />
-              </div>
-            </div>
-          </div>
+                    <div>
+                      {rows.map((item) => {
+                        const spot = Number(item.spot)
+                        const expectedMove = Number(item.expected_move)
+                        const expectedMovePercent =
+                          spot !== 0 ? (expectedMove / spot) * 100 : 0
+                        const isSelected = selectedSimulation?.id === item.id
 
-          <div className="mt-4 rounded-xl border border-zinc-200 bg-white">
-            <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3">
-              <div>
-                <div className="text-[11px] font-bold uppercase tracking-wide text-zinc-400">
-                  Historical Archive
-                </div>
-                <h2 className="mt-1 text-lg font-bold">
-                  Saved CRPM Snapshots
-                </h2>
-              </div>
-            </div>
+                        return (
+                          <Link
+                            key={item.id}
+                            href={`/dashboard/simulations?selected=${item.id}`}
+                            className={`grid grid-cols-[72px_86px_70px_106px_90px_42px] items-center border-b border-[var(--crpm-border)] px-3 py-2 text-[12px] transition ${
+                              isSelected
+                                ? 'bg-[var(--crpm-blue)]/10 shadow-[inset_2px_0_0_var(--crpm-blue)]'
+                                : 'hover:bg-[var(--crpm-soft)]'
+                            }`}
+                            title={`${item.ticker} ${item.company || ''}`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <CRPMLogo ticker={item.ticker} size="xs" />
+                              <span className="font-black text-[var(--crpm-heading)]">
+                                {item.ticker}
+                              </span>
+                            </div>
 
-            {simulations && simulations.length > 0 ? (
-              <div className="max-h-[520px] overflow-auto">
-                <table className="w-full min-w-[900px] table-fixed border-collapse text-[12px]">
-                  <thead className="sticky top-0 z-10 bg-zinc-50 text-[10px] text-zinc-700">
-                    <tr className="border-b border-zinc-200">
-                      <th className="w-[13%] px-3 py-2 text-left font-semibold uppercase">
-                        Ticker
-                      </th>
-                      <th className="w-[22%] px-3 py-2 text-left font-semibold uppercase">
-                        Company
-                      </th>
-                      <th className="w-[12%] px-3 py-2 text-right font-semibold uppercase">
-                        Spot
-                      </th>
-                      <th className="w-[10%] px-3 py-2 text-right font-semibold uppercase">
-                        IV
-                      </th>
-                      <th className="w-[18%] px-3 py-2 text-right font-semibold uppercase">
-                        Expected Move
-                      </th>
-                      <th className="w-[15%] px-3 py-2 text-right font-semibold uppercase">
-                        Snapshot
-                      </th>
-                      <th className="w-[10%] px-3 py-2 text-right font-semibold uppercase">
-                        Action
-                      </th>
-                    </tr>
-                  </thead>
+                            <div className="text-right font-bold text-[var(--crpm-heading)]">
+                              {formatMoney(spot)}
+                            </div>
 
-                  <tbody>
-                    {simulations.map((item) => {
-                      const spot = Number(item.spot)
-                      const expectedMove = Number(item.expected_move)
-                      const expectedMovePercent =
-                        spot !== 0 ? (expectedMove / spot) * 100 : 0
+                            <div className="text-right font-semibold text-[var(--crpm-muted)]">
+                              {formatPercent(Number(item.iv))}
+                            </div>
 
-                      return (
-                        <tr
-                          key={item.id}
-                          className="border-b border-zinc-200 hover:bg-zinc-50"
-                        >
-                          <td className="px-3 py-2 font-bold">
-                            {item.ticker}
-                          </td>
-
-                          <td className="truncate px-3 py-2 text-zinc-600">
-                            {item.company || '-'}
-                          </td>
-
-                          <td className="whitespace-nowrap px-3 py-2 text-right font-semibold">
-                            {formatMoney(spot)}
-                          </td>
-
-                          <td className="whitespace-nowrap px-3 py-2 text-right">
-                            {formatPercent(Number(item.iv))}
-                          </td>
-
-                          <td className="whitespace-nowrap px-3 py-2 text-right">
-                            <span className="font-semibold">
+                            <div className="text-right font-bold text-[var(--crpm-heading)]">
                               ± {formatMoney(expectedMove)}
-                            </span>
-                            <span className="ml-1 text-[11px] text-zinc-500">
-                              ({formatPercent(expectedMovePercent)} / {item.dte}D)
-                            </span>
-                          </td>
+                              <div className="text-[10px] font-semibold text-[var(--crpm-muted)]">
+                                {formatPercent(expectedMovePercent)}
+                              </div>
+                            </div>
 
-                          <td className="whitespace-nowrap px-3 py-2 text-right text-zinc-500">
-                            {formatDate(item.created_at)}
-                          </td>
+                            <div className="text-right font-medium text-[var(--crpm-muted)]">
+                              {formatDate(item.created_at)}
+                            </div>
 
-                          <td className="px-3 py-2 text-right">
-                            <Link
-                              href={`/dashboard/simulations/${item.id}`}
-                              className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-slate-500 bg-slate-600 px-3 text-[11px] font-semibold text-white shadow-sm transition hover:bg-slate-500"
+                            <div className="text-right font-bold text-[var(--crpm-muted)]">
+                              {item.dte}D
+                            </div>
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-8 text-center text-sm text-[var(--crpm-muted)]">
+                    No CRPM snapshots saved yet.
+                  </div>
+                )}
+              </CRPMPanel>
+            </section>
+
+            <section className="flex min-h-0 flex-col gap-2 overflow-visible">
+              {selectedSimulation ? (
+                <>
+                  <CRPMPanel className="shrink-0 px-3 py-2">
+                    <div className="grid grid-cols-[minmax(260px,1fr)_repeat(5,minmax(92px,0.48fr))] items-center gap-2">
+                      <div className="flex items-center gap-3">
+                        <CRPMLogo ticker={selectedSimulation.ticker} size="md" />
+
+                        <div className="min-w-0">
+                          <div className="text-[10px] font-black uppercase tracking-[0.20em] text-[var(--crpm-faint)]">
+                            Selected Snapshot
+                          </div>
+                          <div className="flex items-end gap-2">
+                            <h2 className="text-2xl font-black leading-none text-[var(--crpm-heading)]">
+                              {selectedSimulation.ticker}
+                            </h2>
+                            <span className="truncate text-sm font-semibold text-[var(--crpm-muted)]">
+                              {selectedSimulation.company || '-'}
+                            </span>
+                          </div>
+                          <div className="mt-1 text-[11px] font-semibold text-[var(--crpm-muted)]">
+                            {formatDateTime(selectedSimulation.created_at)}
+                          </div>
+                        </div>
+                      </div>
+
+                      <TopMini label="Spot" value={formatMoney(Number(selectedSimulation.spot))} />
+                      <TopMini label="IV" value={formatPercent(Number(selectedSimulation.iv))} />
+                      <TopMini
+                        label="EM"
+                        value={`± ${formatMoney(Number(selectedSimulation.expected_move))}`}
+                        subvalue={formatPercent(selectedExpectedMovePct)}
+                      />
+                      <TopMini label="DTE" value={`${selectedSimulation.dte ?? '-'}D`} />
+                      <TopMini label="Machines" value={`${selectedMachines.length}/5`} />
+                    </div>
+                  </CRPMPanel>
+
+                  <CRPMPanel className="flex min-h-0 flex-1 flex-col overflow-visible p-4">
+                    <div className="mb-3 flex shrink-0 items-center justify-between gap-3">
+                      <h2 className="text-base font-black uppercase tracking-[0.20em] text-[var(--crpm-blue)]">
+                        CRPM Machines
+                        <span className="ml-2 text-xs text-[var(--crpm-muted)]">
+                          ({selectedMachines.length}/5)
+                        </span>
+                      </h2>
+                      <span className="text-[11px] font-bold text-[var(--crpm-muted)]">
+                        Hover P/L for payoff profile.
+                      </span>
+                    </div>
+
+                    {selectedMachines.length > 0 ? (
+                      <div className="min-h-0 flex-1 space-y-3 overflow-auto pr-1">
+                        {selectedMachines.map((machine: any, index: number) => {
+                          const visual = machineVisual(machine.action)
+                          const isActiveMachine = selectedMachineIndex === index
+                          const name = cleanMachineName(machine.name || machine.title || `Machine ${index + 1}`)
+
+                          return (
+                            <article
+                              key={index}
+                              className={`rounded-md border border-[var(--crpm-border)] bg-[var(--crpm-soft)] transition hover:bg-[var(--crpm-cell)] ${
+                                ''
+                              }`}
                             >
-                              <BarChart3 size={13} />
-                              Open
-                            </Link>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="p-8 text-center text-sm text-zinc-500">
-                No CRPM snapshots saved yet.
-              </div>
-            )}
+                              <div className="grid min-h-[74px] grid-cols-[40px_minmax(190px,1fr)_76px_76px_104px_108px_46px] items-center gap-2 px-3 py-3">
+                                <div className="flex items-center gap-2">
+                                  <span className={`flex h-6 w-6 items-center justify-center rounded-md border border-[var(--crpm-border)] text-[11px] font-black ${visual.text}`}>
+                                    {index + 1}
+                                  </span>
+                                  <div className={`flex h-8 w-8 items-center justify-center rounded-md border border-[var(--crpm-border)] ${visual.text}`}>
+                                    {visual.icon}
+                                  </div>
+                                </div>
+
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <h3 className="truncate text-sm font-black text-[var(--crpm-heading)]">
+                                      {name}
+                                    </h3>
+                                    <span className={`rounded border border-[var(--crpm-border)] px-1.5 py-0.5 text-[9px] font-black ${visual.text}`}>
+                                      {visual.tag}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <MachineCell label="Strike" value={valueOrDash(machine.strike)} />
+                                <MachineCell
+                                  label="Premium"
+                                  value={
+                                    machine.premium !== undefined && machine.premium !== null
+                                      ? `$${machine.premium}`
+                                      : '-'
+                                  }
+                                />
+                                <MachineCell
+                                  label="Max Profit"
+                                  value={valueOrDash(machine.maxProfit ?? machine.max_profit)}
+                                  className="text-emerald-300 data-[crpm-theme=light]:text-emerald-700"
+                                />
+                                <MachineCell
+                                  label="Max Risk"
+                                  value={valueOrDash(machine.maxRisk ?? machine.max_risk)}
+                                  className={visual.tone === 'purple' ? 'text-amber-300 data-[crpm-theme=light]:text-amber-800' : 'text-rose-300 data-[crpm-theme=light]:text-rose-700'}
+                                />
+
+                                <Link
+                                  href={`/dashboard/simulations?selected=${selectedSimulation.id}&machine=${index}`}
+                                  className={`group relative inline-flex h-7 w-[42px] shrink-0 items-center justify-center rounded-md border border-[var(--crpm-border)] px-1 text-[10px] font-black transition ${
+                                    isActiveMachine
+                                      ? `${visual.text} bg-[var(--crpm-cell)]`
+                                      : 'text-[var(--crpm-muted)] hover:text-[var(--crpm-heading)]'
+                                  }`}
+                                >
+                                  P/L
+                                  <PayoffHoverCard
+                                    selectedSimulation={selectedSimulation}
+                                    machine={machine}
+                                    visual={visual}
+                                    machineIndex={index}
+                                  />
+                                </Link>
+                              </div>
+                            </article>
+                          )
+                        })}
+                      </div>
+                    ) : (
+                      <div className="rounded-lg border border-dashed border-[var(--crpm-border)] p-4 text-sm text-[var(--crpm-muted)]">
+                        No CRPM Machines found in saved result.
+                      </div>
+                    )}
+                  </CRPMPanel>
+                </>
+              ) : (
+                <CRPMPanel className="p-6 text-sm text-[var(--crpm-muted)]">
+                  No simulation selected.
+                </CRPMPanel>
+              )}
+            </section>
           </div>
         </div>
+      </main>
+    </CRPMThemeProvider>
+  )
+}
+
+function TopMini({
+  label,
+  value,
+  subvalue,
+}: {
+  label: string
+  value: React.ReactNode
+  subvalue?: React.ReactNode
+}) {
+  return (
+    <div className="rounded-md border border-[var(--crpm-border)] bg-[var(--crpm-soft)] px-2 py-1.5">
+      <div className="text-[8px] font-black uppercase tracking-wide text-[var(--crpm-faint)]">
+        {label}
       </div>
-    </main>
+      <div className="mt-0.5 truncate text-[12px] font-black text-[var(--crpm-heading)]">
+        {value}
+      </div>
+      {subvalue ? (
+        <div className="text-[9px] font-semibold text-[var(--crpm-muted)]">
+          {subvalue}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+function MachineCell({
+  label,
+  value,
+  className = 'text-[var(--crpm-heading)]',
+}: {
+  label: string
+  value: React.ReactNode
+  className?: string
+}) {
+  return (
+    <div className="border-l border-[var(--crpm-border)] px-2">
+      <div className="text-[8px] font-black uppercase tracking-wide text-[var(--crpm-faint)]">
+        {label}
+      </div>
+      <div className={`mt-0.5 text-[12px] font-black leading-4 ${className}`}>
+        {value}
+      </div>
+    </div>
+  )
+}
+
+
+
+
+
+
+
+
+
+
+function PayoffHoverCard({
+  selectedSimulation,
+  machine,
+  visual,
+  machineIndex,
+}: {
+  selectedSimulation: any
+  machine: any
+  visual: MachineVisual
+  machineIndex: number
+}) {
+  const spot = Number(selectedSimulation?.spot)
+  const premium = Number(machine.premium)
+  const strikes = parseStrikes(machine.strike)
+  const strike = strikes[0] ?? spot
+  const secondStrike = strikes[1] ?? strike
+  const cleanPremium = Number.isFinite(premium) ? premium : 0
+  const multiplier = 100
+
+  const breakEven = getBreakEven({
+    kind: visual.payoffKind,
+    spot,
+    strike,
+    secondStrike,
+    premium: cleanPremium,
+  })
+
+  return (
+    <div className="pointer-events-none fixed right-8 top-[190px] z-[9999] hidden w-[720px] max-w-[calc(100vw-64px)] rounded-lg border border-[var(--crpm-border)] bg-[var(--crpm-panel)] p-3 text-left shadow-2xl backdrop-blur-md group-hover:block">
+      <div className="mb-2 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="text-[10px] font-black uppercase tracking-[0.22em] text-[var(--crpm-faint)]">
+            Option P/L - Machine {machineIndex + 1}
+          </div>
+          <div className="mt-0.5 truncate text-base font-black text-[var(--crpm-heading)]">
+            {cleanMachineName(machine.name || machine.title || 'Selected Machine')}
+          </div>
+          <div className="mt-0.5 flex items-center gap-1.5 text-[11px] font-semibold text-[var(--crpm-muted)]">
+            <CRPMLogo ticker={selectedSimulation.ticker} size="xs" />
+            <span>{selectedSimulation.ticker}</span>
+            <span>-</span>
+            <span>{formatDate(selectedSimulation.created_at)}</span>
+          </div>
+        </div>
+
+        <CRPMBadge tone={visual.tone}>{visual.tag}</CRPMBadge>
+      </div>
+
+      <div className="grid gap-3 lg:grid-cols-[140px_1fr]">
+        <div className="space-y-1.5">
+          <HoverMetric label="Spot" value={formatMoney(spot)} />
+          <HoverMetric label="Strike" value={valueOrDash(machine.strike)} />
+          <HoverMetric label="Premium" value={Number.isFinite(cleanPremium) ? `$${cleanPremium}` : '-'} />
+          <HoverMetric label="B/E" value={Number.isFinite(breakEven) ? formatMoney(breakEven) : '-'} />
+          <HoverMetric label="Max Profit" value={valueOrDash(machine.maxProfit ?? machine.max_profit)} className="text-emerald-300 data-[crpm-theme=light]:text-emerald-700" />
+          <HoverMetric label="Max Risk" value={valueOrDash(machine.maxRisk ?? machine.max_risk)} className={visual.tone === 'purple' ? 'text-amber-300 data-[crpm-theme=light]:text-amber-800' : 'text-rose-300 data-[crpm-theme=light]:text-rose-700'} />
+        </div>
+
+        <PayoffChart
+          kind={visual.payoffKind}
+          visual={visual}
+          spot={spot}
+          strike={strike}
+          secondStrike={secondStrike}
+          premium={cleanPremium}
+          multiplier={multiplier}
+          breakEven={breakEven}
+        />
+      </div>
+    </div>
+  )
+}
+
+function HoverMetric({
+  label,
+  value,
+  className = 'text-[var(--crpm-heading)]',
+}: {
+  label: string
+  value: React.ReactNode
+  className?: string
+}) {
+  return (
+    <div className="rounded-md border border-[var(--crpm-border)] bg-[var(--crpm-cell)] px-2 py-1.5">
+      <div className="text-[8px] font-black uppercase tracking-wide text-[var(--crpm-faint)]">
+        {label}
+      </div>
+      <div className={`mt-0.5 text-[12px] font-black leading-tight ${className}`}>
+        {value}
+      </div>
+    </div>
+  )
+}
+
+function parseStrikes(value: any) {
+  const matches = String(value ?? '').match(/\d+(\.\d+)?/g)
+  if (!matches) return []
+  return matches.map((item) => Number(item)).filter((item) => Number.isFinite(item))
+}
+
+function getBreakEven({
+  kind,
+  spot,
+  strike,
+  secondStrike,
+  premium,
+}: {
+  kind: PayoffKind
+  spot: number
+  strike: number
+  secondStrike: number
+  premium: number
+}) {
+  if (kind === 'longCall') return strike + premium
+  if (kind === 'shortPut') return strike - premium
+  if (kind === 'coveredCall') return spot - premium
+  if (kind === 'marriedPut') return spot + premium
+  if (kind === 'assigned') return Math.min(strike, secondStrike) - premium
+  return strike
+}
+
+function payoffAtPrice({
+  kind,
+  price,
+  spot,
+  strike,
+  secondStrike,
+  premium,
+  multiplier,
+}: {
+  kind: PayoffKind
+  price: number
+  spot: number
+  strike: number
+  secondStrike: number
+  premium: number
+  multiplier: number
+}) {
+  if (kind === 'longCall') {
+    return (Math.max(price - strike, 0) - premium) * multiplier
+  }
+
+  if (kind === 'shortPut') {
+    return (premium - Math.max(strike - price, 0)) * multiplier
+  }
+
+  if (kind === 'marriedPut') {
+    return ((price - spot) + Math.max(strike - price, 0) - premium) * multiplier
+  }
+
+  if (kind === 'coveredCall') {
+    return ((price - spot) - Math.max(price - strike, 0) + premium) * multiplier
+  }
+
+  const lowerStrike = Math.min(strike, secondStrike)
+  const upperStrike = Math.max(strike, secondStrike)
+
+  return (
+    premium -
+    Math.max(lowerStrike - price, 0) -
+    Math.max(price - upperStrike, 0)
+  ) * multiplier
+}
+
+function PayoffChart({
+  kind,
+  visual,
+  spot,
+  strike,
+  secondStrike,
+  premium,
+  multiplier,
+  breakEven,
+}: {
+  kind: PayoffKind
+  visual: MachineVisual
+  spot: number
+  strike: number
+  secondStrike: number
+  premium: number
+  multiplier: number
+  breakEven: number
+}) {
+  const referencePrices = [spot, strike, secondStrike, breakEven].filter(Number.isFinite)
+  const minRef = Math.min(...referencePrices)
+  const maxRef = Math.max(...referencePrices)
+  const referenceWidth = Math.max(maxRef - minRef, Math.max(spot * 0.14, 14))
+  const minPrice = Math.max(0, minRef - referenceWidth * 0.9)
+  const maxPrice = maxRef + referenceWidth * 0.9
+
+  const samples = Array.from({ length: 181 }, (_, index) => {
+    const price = minPrice + ((maxPrice - minPrice) * index) / 180
+    return {
+      price,
+      payoff: payoffAtPrice({ kind, price, spot, strike, secondStrike, premium, multiplier }),
+    }
+  })
+
+  const rawMinY = Math.min(0, ...samples.map((item) => item.payoff))
+  const rawMaxY = Math.max(0, ...samples.map((item) => item.payoff))
+  const yPadding = Math.max((rawMaxY - rawMinY) * 0.18, 120)
+  const minY = rawMinY - yPadding
+  const maxY = rawMaxY + yPadding
+
+  const plot = { x: 58, y: 24, w: 438, h: 256 }
+
+  const xScale = (price: number) =>
+    plot.x + ((price - minPrice) / (maxPrice - minPrice)) * plot.w
+
+  const yScale = (payoff: number) =>
+    plot.y + ((maxY - payoff) / (maxY - minY)) * plot.h
+
+  const zeroY = yScale(0)
+  const spotX = xScale(spot)
+  const strikeX = xScale(strike)
+  const breakEvenX = xScale(breakEven)
+
+  const linePoints = samples
+    .map((item) => `${xScale(item.price).toFixed(2)},${yScale(item.payoff).toFixed(2)}`)
+    .join(' ')
+
+  const profitAreaPoints = `${plot.x},${zeroY.toFixed(2)} ${samples
+    .map((item) => `${xScale(item.price).toFixed(2)},${Math.min(yScale(Math.max(item.payoff, 0)), zeroY).toFixed(2)}`)
+    .join(' ')} ${plot.x + plot.w},${zeroY.toFixed(2)}`
+
+  const lossAreaPoints = `${plot.x},${zeroY.toFixed(2)} ${samples
+    .map((item) => `${xScale(item.price).toFixed(2)},${Math.max(yScale(Math.min(item.payoff, 0)), zeroY).toFixed(2)}`)
+    .join(' ')} ${plot.x + plot.w},${zeroY.toFixed(2)}`
+
+  const xLabels = Array.from({ length: 5 }, (_, index) =>
+    minPrice + ((maxPrice - minPrice) * index) / 4
+  )
+
+  return (
+    <div className="rounded-md border border-[var(--crpm-border)] bg-[var(--crpm-cell)] p-2">
+      <svg viewBox="0 0 535 374" className="h-[358px] w-full">
+        <defs>
+          <linearGradient id="crpmProfitAreaReadable" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stopColor="rgb(16,185,129)" stopOpacity="0.035" />
+            <stop offset="100%" stopColor="rgb(16,185,129)" stopOpacity="0.16" />
+          </linearGradient>
+          <linearGradient id="crpmLossAreaReadable" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stopColor="rgb(239,68,68)" stopOpacity="0.13" />
+            <stop offset="100%" stopColor="rgb(239,68,68)" stopOpacity="0.025" />
+          </linearGradient>
+        </defs>
+
+        <rect x={plot.x} y={plot.y} width={plot.w} height={plot.h} rx="6" fill="transparent" stroke="currentColor" strokeOpacity="0.10" />
+
+        {[0, 1, 2, 3, 4].map((index) => {
+          const y = plot.y + (plot.h * index) / 4
+          return <line key={`h-${index}`} x1={plot.x} y1={y} x2={plot.x + plot.w} y2={y} stroke="currentColor" strokeOpacity="0.06" />
+        })}
+
+        {[0, 1, 2, 3, 4].map((index) => {
+          const x = plot.x + (plot.w * index) / 4
+          return <line key={`v-${index}`} x1={x} y1={plot.y} x2={x} y2={plot.y + plot.h} stroke="currentColor" strokeOpacity="0.045" />
+        })}
+
+        <line x1={plot.x} y1={zeroY} x2={plot.x + plot.w} y2={zeroY} stroke="currentColor" strokeOpacity="0.42" strokeDasharray="4 5" />
+
+        <polygon points={profitAreaPoints} fill="url(#crpmProfitAreaReadable)" />
+        <polygon points={lossAreaPoints} fill="url(#crpmLossAreaReadable)" />
+        <polyline points={linePoints} fill="none" stroke="currentColor" strokeWidth="1.45" strokeLinecap="round" strokeLinejoin="round" className={visual.line} />
+
+        <PayoffVerticalLine x={strikeX} y1={plot.y} y2={plot.y + plot.h} />
+        <PayoffVerticalLine x={spotX} y1={plot.y} y2={plot.y + plot.h} color="rgb(168,85,247)" />
+        <PayoffVerticalLine x={breakEvenX} y1={plot.y} y2={plot.y + plot.h} />
+
+        <circle cx={spotX} cy={zeroY} r="3" fill="rgb(168,85,247)" />
+        <circle cx={breakEvenX} cy={zeroY} r="3" fill="currentColor" className={visual.text} />
+
+        <text x={plot.x - 8} y={plot.y + 5} textAnchor="end" className="fill-[var(--crpm-muted)] text-[11px] font-semibold">{formatCompactMoney(maxY)}</text>
+        <text x={plot.x - 8} y={zeroY + 4} textAnchor="end" className="fill-[var(--crpm-muted)] text-[11px] font-semibold">$0</text>
+        <text x={plot.x - 8} y={plot.y + plot.h} textAnchor="end" className="fill-[var(--crpm-muted)] text-[11px] font-semibold">{formatCompactMoney(minY)}</text>
+
+        {xLabels.map((price, index) => {
+          const x = xScale(price)
+          return <text key={index} x={x} y={plot.y + plot.h + 24} textAnchor="middle" className="fill-[var(--crpm-muted)] text-[10px] font-semibold">{Math.round(price)}</text>
+        })}
+
+        <text x={spotX} y={plot.y + plot.h + 48} textAnchor="middle" className="fill-[var(--crpm-purple)] text-[11px] font-black">
+          Spot {formatMoney(spot)}
+        </text>
+
+        <text x={breakEvenX} y={plot.y + plot.h + 66} textAnchor="middle" className="fill-[var(--crpm-muted)] text-[11px] font-black">
+          B/E {formatMoney(breakEven)}
+        </text>
+
+        <text x={plot.x + plot.w / 2} y="370" textAnchor="middle" className="fill-[var(--crpm-muted)] text-[10px] font-bold">Underlying price at expiration</text>
+        <text x="14" y={plot.y + plot.h / 2} transform={`rotate(-90 14 ${plot.y + plot.h / 2})`} textAnchor="middle" className="fill-[var(--crpm-muted)] text-[10px] font-bold">P/L ($)</text>
+      </svg>
+    </div>
+  )
+}
+
+function PayoffVerticalLine({
+  x,
+  y1,
+  y2,
+  color,
+}: {
+  x: number
+  y1: number
+  y2: number
+  color?: string
+}) {
+  if (!Number.isFinite(x)) return null
+
+  return (
+    <line
+      x1={x}
+      y1={y1}
+      x2={x}
+      y2={y2}
+      stroke={color || 'currentColor'}
+      strokeOpacity={color ? 0.65 : 0.28}
+      strokeDasharray="3 4"
+    />
+  )
+}
+
+function formatCompactMoney(value: number) {
+  if (!Number.isFinite(value)) return '-'
+  const sign = value < 0 ? '-' : ''
+  const abs = Math.abs(value)
+  if (abs >= 1000) return `${sign}$${(abs / 1000).toFixed(0)}k`
+  return `${sign}$${abs.toFixed(0)}`
+}
+
+function DirectionalIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4">
+      <path d="M4 17h4l4-6 3 3 5-8" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M16 6h4v4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function PutIncomeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4">
+      <path d="M5 6l14 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M15 18h4v-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="7" cy="7" r="1.7" fill="currentColor" />
+    </svg>
+  )
+}
+
+function ProtectionIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4">
+      <path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6l7-3z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M9 12l2 2 4-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function YieldIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4">
+      <path d="M5 19V9M12 19V5M19 19v-7" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M4 19h16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function BalanceIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4">
+      <path d="M12 4v16M6 8h12M7 8l-3 6h6L7 8zM17 8l-3 6h6l-3-6z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   )
 }
