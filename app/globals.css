@@ -24,3 +24,71 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+/* ------------------------------------------------------------------
+   CRPM Simulations - final scoped light-mode readability
+   Dark Mode untouched: applies only with explicit light theme markers.
+------------------------------------------------------------------ */
+
+.crpm-simulations-page[data-crpm-theme="light"] [href="/dashboard"],
+.crpm-simulations-page[data-crpm-theme="light"] [href="/dashboard/portfolio"],
+.crpm-simulations-page[data-crpm-theme="light"] [href="/dashboard/watchlist"],
+.crpm-simulations-page[data-crpm-theme="light"] [href="/simulatore-pro"],
+.crpm-simulations-page[data-crpm-theme="light"] [href="/dashboard/simulations"],
+[data-crpm-theme="light"] .crpm-simulations-page [href="/dashboard"],
+[data-crpm-theme="light"] .crpm-simulations-page [href="/dashboard/portfolio"],
+[data-crpm-theme="light"] .crpm-simulations-page [href="/dashboard/watchlist"],
+[data-crpm-theme="light"] .crpm-simulations-page [href="/simulatore-pro"],
+[data-crpm-theme="light"] .crpm-simulations-page [href="/dashboard/simulations"],
+.crpm-simulations-page.light [href="/dashboard"],
+.crpm-simulations-page.light [href="/dashboard/portfolio"],
+.crpm-simulations-page.light [href="/dashboard/watchlist"],
+.crpm-simulations-page.light [href="/simulatore-pro"],
+.crpm-simulations-page.light [href="/dashboard/simulations"],
+.light .crpm-simulations-page [href="/dashboard"],
+.light .crpm-simulations-page [href="/dashboard/portfolio"],
+.light .crpm-simulations-page [href="/dashboard/watchlist"],
+.light .crpm-simulations-page [href="/simulatore-pro"],
+.light .crpm-simulations-page [href="/dashboard/simulations"] {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: #94a3b8 !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08) !important;
+}
+
+.crpm-simulations-page[data-crpm-theme="light"] [href="/dashboard"]:hover,
+.crpm-simulations-page[data-crpm-theme="light"] [href="/dashboard/portfolio"]:hover,
+.crpm-simulations-page[data-crpm-theme="light"] [href="/dashboard/watchlist"]:hover,
+.crpm-simulations-page[data-crpm-theme="light"] [href="/simulatore-pro"]:hover,
+.crpm-simulations-page[data-crpm-theme="light"] [href="/dashboard/simulations"]:hover,
+[data-crpm-theme="light"] .crpm-simulations-page [href="/dashboard"]:hover,
+[data-crpm-theme="light"] .crpm-simulations-page [href="/dashboard/portfolio"]:hover,
+[data-crpm-theme="light"] .crpm-simulations-page [href="/dashboard/watchlist"]:hover,
+[data-crpm-theme="light"] .crpm-simulations-page [href="/simulatore-pro"]:hover,
+[data-crpm-theme="light"] .crpm-simulations-page [href="/dashboard/simulations"]:hover,
+.crpm-simulations-page.light [href="/dashboard"]:hover,
+.crpm-simulations-page.light [href="/dashboard/portfolio"]:hover,
+.crpm-simulations-page.light [href="/dashboard/watchlist"]:hover,
+.crpm-simulations-page.light [href="/simulatore-pro"]:hover,
+.crpm-simulations-page.light [href="/dashboard/simulations"]:hover,
+.light .crpm-simulations-page [href="/dashboard"]:hover,
+.light .crpm-simulations-page [href="/dashboard/portfolio"]:hover,
+.light .crpm-simulations-page [href="/dashboard/watchlist"]:hover,
+.light .crpm-simulations-page [href="/simulatore-pro"]:hover,
+.light .crpm-simulations-page [href="/dashboard/simulations"]:hover {
+  color: #075985 !important;
+  background: #e0f2fe !important;
+  border-color: #0284c7 !important;
+}
+
+.crpm-simulations-page[data-crpm-theme="light"] a[href*="machine="],
+[data-crpm-theme="light"] .crpm-simulations-page a[href*="machine="],
+.crpm-simulations-page.light a[href*="machine="],
+.light .crpm-simulations-page a[href*="machine="] {
+  color: #075985 !important;
+  background: #e0f2fe !important;
+  border-color: #0284c7 !important;
+  font-weight: 900 !important;
+}
+

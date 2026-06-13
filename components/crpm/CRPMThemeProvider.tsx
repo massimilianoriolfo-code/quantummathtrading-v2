@@ -54,7 +54,7 @@ export function CRPMThemeProvider({
           [--crpm-blue:#93c5fd]
           [--crpm-purple:#d8b4fe]
           [--crpm-yellow:#fde047]
-          data-[crpm-theme=light]:[--crpm-bg:#eef2f7]
+          data-[crpm-theme=light]:[--crpm-bg:#ffffff]
           data-[crpm-theme=light]:[--crpm-panel:#ffffff]
           data-[crpm-theme=light]:[--crpm-panel-2:#f8fafc]
           data-[crpm-theme=light]:[--crpm-soft:#f1f5f9]
