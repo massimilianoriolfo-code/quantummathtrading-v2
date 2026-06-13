@@ -210,8 +210,9 @@ export default async function SimulationsHistoryPage({
   const uniqueTickers = new Set(rows.map((s) => s.ticker)).size
 
   const selectedSimulation =
-    selectedId ? rows.find((item) => item.id === selectedId) ?? null : null
-
+    rows.find((simulation) => simulation.id === selectedId) ||
+    rows[0] ||
+    null
 
   const selectedResult = parseResult(selectedSimulation?.result)
   const selectedMachines = normalizeMachines(selectedResult)
@@ -300,7 +301,7 @@ export default async function SimulationsHistoryPage({
                             href={`/dashboard/simulations?selected=${item.id}`}
                             className={`grid grid-cols-[72px_86px_70px_106px_90px_42px] items-center border-b border-[var(--crpm-border)] px-3 py-2 text-[12px] transition ${
                               isSelected
-                                ? 'bg-sky-400/[0.15] shadow-[inset_5px_0_0_rgb(125,211,252)]'
+                                ? 'bg-sky-400/[0.13] shadow-[inset_4px_0_0_rgb(125,211,252)]'
                                 : 'hover:bg-[var(--crpm-soft)]'
                             }`}
                           >
@@ -477,48 +478,15 @@ export default async function SimulationsHistoryPage({
                   </CRPMPanel>
                 </>
               ) : (
-                <CRPMPanel className="flex min-h-full flex-1 items-center justify-center p-8">
-      <div className="max-w-xl text-center">
-        <div className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--crpm-faint)]">
-          No snapshot selected
-        </div>
-
-        <h2 className="mt-2 text-2xl font-black text-[var(--crpm-heading)]">
-          Select a saved snapshot
-        </h2>
-
-        <p className="mt-3 max-w-lg text-sm font-semibold leading-6 text-[var(--crpm-muted)]">
-          Select a simulation from the archive to review its CRPM analysis, generated machines and payoff profile.
-        </p>
-      </div>
-    </CRPMPanel>
+                <CRPMPanel className="p-6 text-sm text-[var(--crpm-muted)]">
+                  No simulation selected.
+                </CRPMPanel>
               )}
             </section>
           </div>
         </div>
       </main>
     </CRPMThemeProvider>
-  )
-}
-
-
-function EmptySimulationSelection() {
-  return (
-    <CRPMPanel className="flex min-h-full flex-1 items-center justify-center p-8">
-      <div className="max-w-xl text-center">
-        <div className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--crpm-faint)]">
-          No snapshot selected
-        </div>
-
-        <h2 className="mt-2 text-2xl font-black text-[var(--crpm-heading)]">
-          Select a saved snapshot
-        </h2>
-
-        <p className="mt-3 max-w-lg text-sm font-semibold leading-6 text-[var(--crpm-muted)]">
-          Select a simulation from the archive to review its CRPM analysis, generated machines and payoff profile.
-        </p>
-      </div>
-    </CRPMPanel>
   )
 }
 

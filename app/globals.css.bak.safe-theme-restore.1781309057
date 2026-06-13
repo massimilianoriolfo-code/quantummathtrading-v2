@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ------------------------------------------------------------------
+   CRPM Simulations - Light Mode Contrast Safety Patch
+   Scope: readability only. No layout, no JSX, no logic.
+------------------------------------------------------------------ */
+
+html:not(.dark) [href="/dashboard"],
+html:not(.dark) [href="/dashboard/portfolio"],
+html:not(.dark) [href="/dashboard/watchlist"],
+html:not(.dark) [href="/simulatore-pro"],
+html:not(.dark) [href="/dashboard/simulations"] {
+  color: #0f172a !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: #94a3b8 !important;
+  box-shadow: none !important;
+}
+
+html:not(.dark) [href="/dashboard"]:hover,
+html:not(.dark) [href="/dashboard/portfolio"]:hover,
+html:not(.dark) [href="/dashboard/watchlist"]:hover,
+html:not(.dark) [href="/simulatore-pro"]:hover,
+html:not(.dark) [href="/dashboard/simulations"]:hover {
+  background: #e0f2fe !important;
+  border-color: #0284c7 !important;
+  color: #0f172a !important;
+}
+
+/* P/L buttons and small action buttons */
+html:not(.dark) a[href*="machine="],
+html:not(.dark) button {
+  color: #0f172a !important;
+}
+
+html:not(.dark) a[href*="machine="] {
+  background: #e0f2fe !important;
+  border-color: #0284c7 !important;
+  color: #075985 !important;
+  font-weight: 800 !important;
+}
+
+/* CRPM machine labels: preserve meaning, increase contrast */
+html:not(.dark) .text-emerald-300,
+html:not(.dark) .text-emerald-400 {
+  color: #047857 !important;
+}
+
+html:not(.dark) .text-sky-300,
+html:not(.dark) .text-sky-400 {
+  color: #0369a1 !important;
+}
+
+html:not(.dark) .text-rose-300,
+html:not(.dark) .text-rose-400 {
+  color: #be123c !important;
+}
+
+html:not(.dark) .text-purple-300,
+html:not(.dark) .text-purple-400 {
+  color: #6d28d9 !important;
+}
+
+html:not(.dark) .text-yellow-300,
+html:not(.dark) .text-yellow-400 {
+  color: #a16207 !important;
+}
+
+/* Avoid unreadable white/near-white text in light mode */
+html:not(.dark) .text-white,
+html:not(.dark) .text-slate-50,
+html:not(.dark) .text-zinc-50,
+html:not(.dark) .text-neutral-50 {
+  color: #0f172a !important;
+}
+
+/* Muted labels in light mode */
+html:not(.dark) .text-slate-300,
+html:not(.dark) .text-zinc-300,
+html:not(.dark) .text-neutral-300 {
+  color: #475569 !important;
+}
+
+/* Keep dark/light toggle readable */
+html:not(.dark) button[aria-label*="Dark"],
+html:not(.dark) button[aria-label*="Light"],
+html:not(.dark) button:has(svg) {
+  color: #0f172a !important;
+}
+
