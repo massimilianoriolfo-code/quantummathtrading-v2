@@ -356,7 +356,7 @@ export default async function SimulationsHistoryPage({
 
                         <div className="min-w-0">
                           <div className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--crpm-faint)]">
-                            CRPM Analysis of Selected Snapshot
+                            Selected CRPM Snapshot
                           </div>
                           <div className="flex items-end gap-2">
                             <h2 className="text-[28px] font-black leading-none tracking-tight text-[var(--crpm-heading)]">
@@ -367,7 +367,7 @@ export default async function SimulationsHistoryPage({
                             </span>
                           </div>
                           <div className="mt-1 text-[12px] font-bold text-[var(--crpm-muted)]">
-                            Snapshot generated on {formatDateTime(selectedSimulation.created_at)}
+                            Generated: {formatDateTime(selectedSimulation.created_at)}
                           </div>
                         </div>
                       </div>
