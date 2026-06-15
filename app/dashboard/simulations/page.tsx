@@ -118,7 +118,7 @@ function machineVisual(action: any): MachineVisual {
     return {
       tone: 'red',
       tag: 'INCOME',
-      text: 'text-rose-300 data-[crpm-theme=light]:text-rose-700',
+      text: 'text-[var(--crpm-red)]',
       line: 'stroke-rose-300 data-[crpm-theme=light]:stroke-rose-700',
       border: 'border-rose-400/45',
       bg: 'bg-rose-500/[0.035]',
@@ -132,7 +132,7 @@ function machineVisual(action: any): MachineVisual {
     return {
       tone: 'blue',
       tag: 'PROTECTION',
-      text: 'text-sky-300 data-[crpm-theme=light]:text-sky-700',
+      text: 'text-[var(--crpm-blue)]',
       line: 'stroke-sky-300 data-[crpm-theme=light]:stroke-sky-700',
       border: 'border-sky-400/45',
       bg: 'bg-sky-500/[0.035]',
@@ -146,7 +146,7 @@ function machineVisual(action: any): MachineVisual {
     return {
       tone: 'purple',
       tag: 'YIELD',
-      text: 'text-violet-300 data-[crpm-theme=light]:text-violet-700',
+      text: 'text-[var(--crpm-purple)]',
       line: 'stroke-violet-300 data-[crpm-theme=light]:stroke-violet-700',
       border: 'border-violet-400/45',
       bg: 'bg-violet-500/[0.035]',
@@ -160,7 +160,7 @@ function machineVisual(action: any): MachineVisual {
     return {
       tone: 'yellow',
       tag: 'NEUTRAL',
-      text: 'text-amber-300 data-[crpm-theme=light]:text-amber-800',
+      text: 'text-[var(--crpm-yellow)]',
       line: 'stroke-amber-300 data-[crpm-theme=light]:stroke-amber-800',
       border: 'border-amber-400/50',
       bg: 'bg-amber-500/[0.035]',
@@ -173,7 +173,7 @@ function machineVisual(action: any): MachineVisual {
   return {
     tone: 'green',
     tag: 'BULLISH',
-    text: 'text-emerald-300 data-[crpm-theme=light]:text-emerald-700',
+    text: 'text-[var(--crpm-green)]',
     line: 'stroke-emerald-300 data-[crpm-theme=light]:stroke-emerald-700',
     border: 'border-emerald-400/45',
     bg: 'bg-emerald-500/[0.035]',
@@ -225,8 +225,8 @@ export default async function SimulationsHistoryPage({
 
   return (
     <CRPMThemeProvider>
-      <main className="h-screen overflow-visible bg-[var(--crpm-bg)] p-4 text-[var(--crpm-text)]">
-        <div className="mx-auto flex h-full max-w-[1920px] flex-col gap-3">
+      <main className="crpm-simulations-page h-screen overflow-hidden bg-[var(--crpm-bg)] p-4 text-[var(--crpm-text)]">
+        <div className="mx-auto flex h-full w-full max-w-[1920px] flex-col gap-3 overflow-hidden">
           <header className="flex shrink-0 items-center justify-between gap-4">
             <div>
               <div className="text-[10px] font-black uppercase tracking-[0.28em] text-[var(--crpm-faint)]">
@@ -240,17 +240,13 @@ export default async function SimulationsHistoryPage({
             <div className="flex shrink-0 items-center gap-2">
               <nav className="hidden items-center gap-2 lg:flex">
                 {navItems.map((item) => {
-                  const isActive = item.label === 'Dashboard'
                   return (
                     <Link
                       key={item.href}
                       href={item.href}
-                      className={
-                        false
-                          ? ''
-                          : 'inline-flex h-9 items-center justify-center rounded-md border border-sky-400/35 bg-sky-400/[0.08] px-4 text-[12px] font-black text-sky-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition hover:border-sky-300 hover:bg-sky-400/[0.14] hover:text-white active:translate-y-px'
-                      }
+                      className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-[var(--crpm-border)] bg-[var(--crpm-panel)] px-4 text-[12px] font-black text-[var(--crpm-blue)] shadow-sm transition hover:border-[var(--crpm-blue)] hover:bg-[var(--crpm-soft)] active:translate-y-px" 
                     >
+                      <NavIcon label={item.label} />
                       {item.label}
                     </Link>
                   )
@@ -261,9 +257,9 @@ export default async function SimulationsHistoryPage({
             </div>
           </header>
 
-          <div className="grid min-h-0 flex-1 gap-3 xl:grid-cols-[0.40fr_0.60fr]">
-            <section className="flex min-h-0 flex-col gap-2">
-              <CRPMPanel className="shrink-0 border-l-4 border-l-sky-300/80 px-3 py-2">
+          <div className="grid min-h-0 flex-1 gap-3 overflow-hidden xl:grid-cols-[minmax(500px,0.40fr)_minmax(0,0.60fr)]">
+            <section className="flex min-h-0 min-w-0 flex-col gap-2 overflow-hidden">
+              <CRPMPanel className="shrink-0 border-l-4 border-l-[var(--crpm-blue)] px-3 py-2 shadow-sm">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-black text-[var(--crpm-heading)] whitespace-nowrap whitespace-nowrap">
                     Saved CRPM Snapshots
@@ -300,7 +296,7 @@ export default async function SimulationsHistoryPage({
                             href={`/dashboard/simulations?selected=${item.id}`}
                             className={`grid grid-cols-[72px_86px_70px_106px_90px_42px] items-center border-b border-[var(--crpm-border)] px-3 py-2 text-[12px] transition ${
                               isSelected
-                                ? 'bg-sky-400/[0.15] shadow-[inset_5px_0_0_rgb(125,211,252)]'
+                                ? 'bg-[var(--crpm-soft)] shadow-[inset_3px_0_0_var(--crpm-blue),inset_-3px_0_0_var(--crpm-blue)]'
                                 : 'hover:bg-[var(--crpm-soft)]'
                             }`}
                           >
@@ -346,11 +342,11 @@ export default async function SimulationsHistoryPage({
               </CRPMPanel>
             </section>
 
-            <section className="flex min-h-0 flex-col gap-2 overflow-visible">
+            <section className="flex min-h-0 min-w-0 flex-col gap-2 overflow-hidden">
               {selectedSimulation ? (
                 <>
-                  <CRPMPanel className="shrink-0 px-3 py-2">
-                    <div className="grid grid-cols-[minmax(320px,1fr)_minmax(100px,0.45fr)_minmax(100px,0.45fr)_minmax(160px,0.70fr)_minmax(90px,0.38fr)] items-center gap-0">
+                  <CRPMPanel className="min-w-0 shrink-0 px-4 py-2 shadow-sm">
+                    <div className="grid grid-cols-[minmax(260px,1fr)_minmax(92px,0.42fr)_minmax(82px,0.36fr)_minmax(148px,0.62fr)_minmax(70px,0.30fr)] items-center gap-0">
                       <div className="flex items-center gap-4">
                         <CRPMLogo ticker={selectedSimulation.ticker} size="md" />
 
@@ -383,18 +379,18 @@ export default async function SimulationsHistoryPage({
                     </div>
                   </CRPMPanel>
 
-                  <CRPMPanel className="flex min-h-0 flex-1 flex-col overflow-visible p-4">
+                  <CRPMPanel className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden p-3 shadow-sm">
                     <div className="mb-3 flex shrink-0 items-center justify-between gap-3">
                       <h2 className="text-base font-black uppercase tracking-[0.20em] text-[var(--crpm-blue)]">
                         CRPM Machines
                       </h2>
                       <span className="text-[11px] font-bold text-[var(--crpm-muted)]">
-                        Hover P/L for payoff profile.
+                        Click P/L to update the payoff panel below.
                       </span>
                     </div>
 
                     {selectedMachines.length > 0 ? (
-                      <div className="min-h-0 flex-1 space-y-3 overflow-auto pr-1">
+                      <div className="min-h-0 flex-1 space-y-2 overflow-auto pr-1 pb-3">
                         {selectedMachines.map((machine: any, index: number) => {
                           const visual = machineVisual(machine.action)
                           const isActiveMachine = selectedMachineIndex === index
@@ -403,26 +399,26 @@ export default async function SimulationsHistoryPage({
                           return (
                             <article
                               key={index}
-                              className={`rounded-md border border-[var(--crpm-border)] bg-[var(--crpm-soft)] transition ${
+                              className={`rounded-xl border border-[var(--crpm-border)] bg-[var(--crpm-panel)] shadow-sm transition ${
                                 ''
                               }`}
                             >
-                              <div className="grid min-h-[74px] grid-cols-[40px_minmax(190px,1fr)_76px_76px_104px_108px_46px] items-center gap-2 px-3 py-3">
+                              <div className="grid min-h-[58px] grid-cols-[38px_minmax(150px,1fr)_62px_66px_88px_92px_46px] items-center gap-2 px-3 py-2">
                                 <div className="flex items-center gap-2">
-                                  <span className={`flex h-6 w-6 items-center justify-center rounded-md border border-[var(--crpm-border)] text-[11px] font-black ${visual.text}`}>
+                                  <span className={`flex h-5 w-5 items-center justify-center rounded-md border border-[var(--crpm-border)] text-[11px] font-black ${visual.text}`}>
                                     {index + 1}
                                   </span>
-                                  <div className={`flex h-8 w-8 items-center justify-center rounded-md border border-[var(--crpm-border)] ${visual.text}`}>
+                                  <div className={`flex h-7 w-7 items-center justify-center rounded-md border border-[var(--crpm-border)] ${visual.text}`}>
                                     {visual.icon}
                                   </div>
                                 </div>
 
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-2">
-                                    <h3 className="truncate text-sm font-black text-[var(--crpm-heading)] whitespace-nowrap whitespace-nowrap">
+                                    <h3 className="truncate text-[13px] font-black text-[var(--crpm-heading)] whitespace-nowrap whitespace-nowrap">
                                       {name}
                                     </h3>
-                                    <span className={`rounded border border-[var(--crpm-border)] px-1.5 py-0.5 text-[9px] font-black ${visual.text}`}>
+                                    <span className={`rounded-md border border-[var(--crpm-border)] bg-[var(--crpm-panel)] px-2 py-0.5 text-[9px] font-black shadow-sm ${visual.text}`}>
                                       {visual.tag}
                                     </span>
                                   </div>
@@ -440,34 +436,33 @@ export default async function SimulationsHistoryPage({
                                 <MachineCell
                                   label="Max Profit"
                                   value={valueOrDash(machine.maxProfit ?? machine.max_profit)}
-                                  className="text-emerald-300 data-[crpm-theme=light]:text-emerald-700"
+                                  className="text-[var(--crpm-green)]"
                                 />
                                 <MachineCell
                                   label="Max Risk"
                                   value={valueOrDash(machine.maxRisk ?? machine.max_risk)}
-                                  className={visual.tone === 'purple' ? 'text-amber-300 data-[crpm-theme=light]:text-amber-800' : 'text-rose-300 data-[crpm-theme=light]:text-rose-700'}
+                                  className={visual.tone === 'purple' ? 'text-[var(--crpm-yellow)]' : 'text-[var(--crpm-red)]'}
                                 />
 
                                 <Link
                                   href={`/dashboard/simulations?selected=${selectedSimulation.id}&machine=${index}`}
-                                  className={`group relative inline-flex h-7 w-[44px] shrink-0 items-center justify-center rounded-md border border-sky-400/35 bg-sky-400/[0.08] px-1 text-[10px] font-black text-sky-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition hover:border-sky-300 hover:bg-sky-400/[0.16] hover:text-white active:translate-y-px ${
-                                    isActiveMachine
-                                      ? `${visual.text} bg-[var(--crpm-cell)]`
-                                      : 'text-[var(--crpm-muted)] hover:text-[var(--crpm-heading)]'
-                                  }`}
+                                  className="inline-flex h-8 w-[44px] shrink-0 items-center justify-center justify-self-end rounded-md border border-[var(--crpm-blue)] bg-[var(--crpm-blue)] px-2 text-[10px] font-black text-white shadow-sm transition hover:brightness-90 active:translate-y-px"
                                 >
                                   P/L
-                                  <PayoffHoverCard
-                                    selectedSimulation={selectedSimulation}
-                                    machine={machine}
-                                    visual={visual}
-                                    machineIndex={index}
-                                  />
                                 </Link>
                               </div>
                             </article>
                           )
                         })}
+
+                        {selectedMachineIndex >= 0 && selectedMachines[selectedMachineIndex] ? (
+                          <PayoffAnalysisPanel
+                            selectedSimulation={selectedSimulation}
+                            machine={selectedMachines[selectedMachineIndex]}
+                            visual={machineVisual(selectedMachines[selectedMachineIndex]?.action)}
+                            machineIndex={selectedMachineIndex}
+                          />
+                        ) : null}
                       </div>
                     ) : (
                       <div className="rounded-lg border border-dashed border-[var(--crpm-border)] p-4 text-sm text-[var(--crpm-muted)]">
@@ -498,6 +493,41 @@ export default async function SimulationsHistoryPage({
         </div>
       </main>
     </CRPMThemeProvider>
+  )
+}
+
+
+function NavIcon({ label }: { label: string }) {
+  const common = "h-3.5 w-3.5 stroke-[2.4]"
+
+  if (label === 'Dashboard') {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" className={common} aria-hidden="true">
+        <path d="M4 5h7v7H4V5Zm9 0h7v4h-7V5ZM4 14h7v5H4v-5Zm9-3h7v8h-7v-8Z" stroke="currentColor" />
+      </svg>
+    )
+  }
+
+  if (label === 'Portfolio') {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" className={common} aria-hidden="true">
+        <path d="M8 7V6a3 3 0 0 1 3-3h2a3 3 0 0 1 3 3v1M4 9h16v10H4V9Zm0 4h16" stroke="currentColor" />
+      </svg>
+    )
+  }
+
+  if (label === 'Watchlist') {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" className={common} aria-hidden="true">
+        <path d="M12 5l2 4 4.5.7-3.3 3.2.8 4.5-4-2.1-4 2.1.8-4.5L5.5 9.7 10 9l2-4Z" stroke="currentColor" />
+      </svg>
+    )
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={common} aria-hidden="true">
+      <path d="M4 16l5-5 3 3 7-8M4 20h16" stroke="currentColor" />
+    </svg>
   )
 }
 
@@ -565,11 +595,11 @@ function MachineCell({
   className?: string
 }) {
   return (
-    <div className="border-l border-[var(--crpm-border)] px-2">
-      <div className="text-[8px] font-black uppercase tracking-wide text-[var(--crpm-faint)]">
+    <div className="border-l border-[var(--crpm-border)] px-2.5">
+      <div className="text-[8px] font-black uppercase tracking-wide text-[var(--crpm-muted)]">
         {label}
       </div>
-      <div className={`mt-0.5 text-[12px] font-black leading-4 ${className}`}>
+      <div className={`mt-0.5 text-[11px] font-black leading-4 ${className}`}>
         {value}
       </div>
     </div>
@@ -585,7 +615,7 @@ function MachineCell({
 
 
 
-function PayoffHoverCard({
+function PayoffAnalysisPanel({
   selectedSimulation,
   machine,
   visual,
@@ -613,7 +643,7 @@ function PayoffHoverCard({
   })
 
   return (
-    <div className="pointer-events-none fixed right-8 top-[190px] z-[9999] hidden w-[720px] max-w-[calc(100vw-64px)] rounded-lg border border-[var(--crpm-border)] bg-[var(--crpm-panel)] p-3 text-left shadow-2xl backdrop-blur-md group-hover:block">
+    <div className="mt-3 rounded-xl border border-[var(--crpm-border)] bg-[var(--crpm-panel)] p-3 text-left shadow-sm">
       <div className="mb-2 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-[10px] font-black uppercase tracking-[0.22em] text-[var(--crpm-faint)]">
@@ -633,14 +663,14 @@ function PayoffHoverCard({
         <CRPMBadge tone={visual.tone}>{visual.tag}</CRPMBadge>
       </div>
 
-      <div className="grid gap-3 lg:grid-cols-[140px_1fr]">
+      <div className="grid gap-3 lg:grid-cols-[132px_minmax(0,1fr)]">
         <div className="space-y-1.5">
           <HoverMetric label="Spot" value={formatMoney(spot)} />
           <HoverMetric label="Strike" value={valueOrDash(machine.strike)} />
           <HoverMetric label="Premium" value={Number.isFinite(cleanPremium) ? `$${cleanPremium}` : '-'} />
           <HoverMetric label="B/E" value={Number.isFinite(breakEven) ? formatMoney(breakEven) : '-'} />
-          <HoverMetric label="Max Profit" value={valueOrDash(machine.maxProfit ?? machine.max_profit)} className="text-emerald-300 data-[crpm-theme=light]:text-emerald-700" />
-          <HoverMetric label="Max Risk" value={valueOrDash(machine.maxRisk ?? machine.max_risk)} className={visual.tone === 'purple' ? 'text-amber-300 data-[crpm-theme=light]:text-amber-800' : 'text-rose-300 data-[crpm-theme=light]:text-rose-700'} />
+          <HoverMetric label="Max Profit" value={valueOrDash(machine.maxProfit ?? machine.max_profit)} className="text-[var(--crpm-green)]" />
+          <HoverMetric label="Max Risk" value={valueOrDash(machine.maxRisk ?? machine.max_risk)} className={visual.tone === 'purple' ? 'text-[var(--crpm-yellow)]' : 'text-[var(--crpm-red)]'} />
         </div>
 
         <PayoffChart
@@ -668,8 +698,8 @@ function HoverMetric({
   className?: string
 }) {
   return (
-    <div className="rounded-sm border border-[var(--crpm-border)]/60 bg-transparent px-2 py-1.5">
-      <div className="text-[8px] font-black uppercase tracking-wide text-[var(--crpm-faint)]">
+    <div className="rounded-md border border-[var(--crpm-border)]/60 bg-[var(--crpm-panel)] px-2 py-1">
+      <div className="text-[8px] font-black uppercase tracking-wide text-[var(--crpm-muted)]">
         {label}
       </div>
       <div className={`mt-0.5 text-[12px] font-black leading-tight ${className}`}>
