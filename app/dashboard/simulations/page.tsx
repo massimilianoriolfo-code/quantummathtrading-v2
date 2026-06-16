@@ -264,8 +264,13 @@ export default async function SimulationsHistoryPage({
                   <h2 className="text-lg font-black text-[var(--crpm-heading)] whitespace-nowrap whitespace-nowrap">
                     Saved CRPM Snapshots
                   </h2>
-                  <div className="text-[11px] font-bold text-[var(--crpm-muted)]">
-                    {total} snapshots · {uniqueTickers} tickers
+                  <div className="text-right">
+                    <div className="text-[11px] font-bold text-[var(--crpm-muted)]">
+                      {total} snapshots · {uniqueTickers} tickers
+                    </div>
+                    <div className="mt-0.5 text-[10px] font-black uppercase tracking-wide text-[var(--crpm-blue)]">
+                      Click a row to inspect details →
+                    </div>
                   </div>
                 </div>
               </CRPMPanel>
@@ -296,7 +301,7 @@ export default async function SimulationsHistoryPage({
                             href={`/dashboard/simulations?selected=${item.id}`}
                             className={`grid grid-cols-[72px_86px_70px_106px_90px_42px] items-center border-b border-[var(--crpm-border)] px-3 py-2 text-[12px] transition ${
                               isSelected
-                                ? 'bg-[var(--crpm-soft)] shadow-[inset_3px_0_0_var(--crpm-blue),inset_-3px_0_0_var(--crpm-blue)]'
+                                ? 'bg-[var(--crpm-soft)] ring-1 ring-inset ring-[var(--crpm-blue)] shadow-[inset_4px_0_0_var(--crpm-blue)]'
                                 : 'hover:bg-[var(--crpm-soft)]'
                             }`}
                           >
@@ -305,6 +310,9 @@ export default async function SimulationsHistoryPage({
                               <span className="font-black text-[var(--crpm-heading)] whitespace-nowrap whitespace-nowrap">
                                 {item.ticker}
                               </span>
+                              {isSelected ? (
+                                <span className="text-[10px] font-black text-[var(--crpm-blue)]">→</span>
+                              ) : null}
                             </div>
 
                             <div className="text-right font-bold text-[var(--crpm-heading)]">
@@ -351,8 +359,8 @@ export default async function SimulationsHistoryPage({
                         <CRPMLogo ticker={selectedSimulation.ticker} size="md" />
 
                         <div className="min-w-0">
-                          <div className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--crpm-faint)]">
-                            Selected CRPM Snapshot
+                          <div className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--crpm-blue)]">
+                            Selected from Saved CRPM Snapshots →
                           </div>
                           <div className="flex items-end gap-2">
                             <h2 className="text-[28px] font-black leading-none tracking-tight text-[var(--crpm-heading)]">
