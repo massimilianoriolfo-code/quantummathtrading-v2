@@ -255,7 +255,7 @@ export default async function DashboardPage() {
           title="CRPM Control Center"
         />
 
-        <section className="min-h-0 flex-1 overflow-auto rounded-2xl border border-[#d7dee8] bg-white p-3 shadow-sm">
+        <div className="min-h-0 flex-1 overflow-auto">
 
           {latestAnalysis && (
             <div className="mt-3 rounded-xl border border-[#d7dee8] bg-white p-3 shadow-sm">
@@ -428,7 +428,7 @@ export default async function DashboardPage() {
               </span>
             </div>
           </div>
-        </section>
+        </div>
         </div>
       </div>
     </main>
