@@ -61,24 +61,28 @@ function getAnalysisAgeBadge(value: string | null | undefined) {
 
   if (diffDays < 3) {
     return (
-  <span className="text-[11px] font-semibold text-emerald-700">
-    {diffDays}d
-  </span>
-)
+      <span className="inline-flex items-center justify-center gap-1 text-[11px] font-semibold text-emerald-700">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
+        {diffDays}d
+      </span>
+    )
   }
 
   if (diffDays < 7) {
     return (
-  <span className="text-[11px] font-semibold text-amber-700">
-    {diffDays}d
-  </span>
-)  }
+      <span className="inline-flex items-center justify-center gap-1 text-[11px] font-semibold text-amber-700">
+        <span className="h-1.5 w-1.5 rounded-full bg-amber-600" />
+        {diffDays}d
+      </span>
+    )
+  }
 
   return (
-  <span className="text-[11px] font-semibold text-red-700">
-    {diffDays}d
-  </span>
-)
+    <span className="inline-flex items-center justify-center gap-1 text-[11px] font-semibold text-red-700">
+      <span className="h-1.5 w-1.5 rounded-full bg-red-600" />
+      {diffDays}d
+    </span>
+  )
 }
 
 function KpiCard({
@@ -315,7 +319,7 @@ export default async function WatchlistPage() {
                         </span>
                       </th>
 
-                      <th className="w-[10%] px-2 py-2 text-left font-semibold uppercase">
+                      <th className="w-[14%] px-2 py-2 text-left font-semibold uppercase">
                         <span className="inline-flex items-center gap-1 whitespace-nowrap">
                           Company
                           <InfoTooltip text="Company: company name associated with the ticker." />
@@ -343,7 +347,7 @@ export default async function WatchlistPage() {
                         </span>
                       </th>
 
-                      <th className="w-[14%] px-2 py-2 text-right font-semibold uppercase">
+                      <th className="w-[13%] px-2 py-2 text-right font-semibold uppercase">
                         <span className="inline-flex items-center justify-end gap-1 whitespace-nowrap">
                           CRPM Expected Move
                           <InfoTooltip text="Expected move: estimated move over the shown DTE horizon, also expressed as percentage of spot." />
@@ -364,7 +368,7 @@ export default async function WatchlistPage() {
                         </span>
                       </th>
 
-                      <th className="w-[9%] py-2 pl-2 pr-2 text-center font-semibold uppercase">
+                      <th className="w-[8%] py-2 pl-2 pr-2 text-center font-semibold uppercase">
                         <span className="inline-flex items-center justify-end gap-1 whitespace-nowrap">
                           Actions
                           <InfoTooltip text="Actions: analyze, refresh or remove this ticker." />
@@ -395,7 +399,7 @@ export default async function WatchlistPage() {
   </div>
 </td>
 
-                          <td className="truncate px-2 py-2 text-zinc-700">
+                          <td className="truncate px-2 py-2 text-zinc-700" title={item.company || '-'}>
                             {item.company || '-'}
                           </td>
 
