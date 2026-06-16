@@ -1,15 +1,14 @@
 import type { ReactNode } from 'react'
 import RefreshAllWatchlistButton from './RefreshAllWatchlistButton'
 import { currentUser } from '@clerk/nextjs/server'
-import Link from 'next/link'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import DeleteWatchlistButton from './DeleteWatchlistButton'
 import AddWatchlistTickerForm from './AddWatchlistTickerForm'
 import RefreshWatchlistTickerButton from './RefreshWatchlistTickerButton'
 import InfoTooltip from '@/components/InfoTooltip'
+import CRPMHeader from '@/components/crpm/CRPMHeader'
 import {
   Apple,
-  BarChart3,
   BookmarkCheck,
   BriefcaseBusiness,
   Eye,
@@ -233,29 +232,11 @@ export default async function WatchlistPage() {
   return (
     <main className="min-h-screen bg-zinc-50 p-4 text-[12px] text-zinc-950">
       <div className="mx-auto w-full rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-        <div className="flex items-start justify-between border-b border-zinc-200 pb-4">
-          <div>
-            <Link
-              href="/dashboard"
-              className="text-xs font-bold uppercase tracking-wide text-zinc-500 hover:text-zinc-900"
-            >
-              ← Back to Control Center
-            </Link>
-
-            <div className="mt-3 flex items-center gap-2">
-              <h1 className="text-3xl font-bold tracking-tight">Watchlist</h1>
-              <InfoTooltip text="Watchlist: monitored tickers with latest CRPM market snapshot, expected move and refresh actions." />
-            </div>
-          </div>
-
-          <Link
-            href="/simulatore-pro"
-            className="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md border border-slate-500 bg-slate-600 px-4 text-[12px] font-semibold text-white shadow-[0_3px_8px_rgba(0,0,0,0.18)] transition-all duration-150 hover:-translate-y-[1px] hover:bg-amber-400 hover:shadow-[0_6px_12px_rgba(0,0,0,0.22)] active:translate-y-[2px] active:shadow-[0_1px_3px_rgba(0,0,0,0.18)] disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <BarChart3 size={16} />
-            Open Simulator
-          </Link>
-        </div>
+        <CRPMHeader
+          active="watchlist"
+          title="Watchlist"
+          subtitle="Monitored tickers with latest CRPM market snapshot, expected move and refresh actions."
+        />
 
         <div className="mt-5 grid gap-4 md:grid-cols-4">
           <KpiCard
