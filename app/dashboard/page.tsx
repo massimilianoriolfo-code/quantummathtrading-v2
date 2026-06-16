@@ -1,16 +1,8 @@
 import { currentUser } from '@clerk/nextjs/server'
 import { UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
-import DashboardNav from '@/components/dashboard/DashboardNav'
+import CRPMAppNav from '@/components/crpm/CRPMAppNav'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
-import {
-  BarChart3,
-  Bot,
-  BriefcaseBusiness,
-  Clock3,
-  CreditCard,
-  Eye,
-} from 'lucide-react'
 
 function formatNumber(value: number) {
   return value.toLocaleString('en-US')
@@ -28,14 +20,29 @@ function formatDate(value: string | null | undefined) {
   }).format(new Date(value))
 }
 
+function formatShortDate(value: string | null | undefined) {
+  if (!value) return '-'
+
+  return new Intl.DateTimeFormat('it-IT', {
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(value))
+}
 
 function formatMoney(value: number | null | undefined) {
-  if (value == null) return '-'
+  if (value == null || !Number.isFinite(Number(value))) return '-'
 
   return `$ ${Number(value).toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`
+}
+
+function formatPercent(value: number | null | undefined) {
+  if (value == null || !Number.isFinite(Number(value))) return '-'
+  return `${Number(value).toFixed(2)}%`
 }
 
 function MetricCard({
@@ -46,58 +53,87 @@ function MetricCard({
   value: string
 }) {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3">
-      <div className="text-[11px] font-bold uppercase tracking-wide text-zinc-500">
+    <div className="rounded-xl border border-[#d7dee8] bg-white px-4 py-3 shadow-sm">
+      <div className="text-[11px] font-black uppercase tracking-wide text-[#4b5f7a]">
         {label}
       </div>
-      <div className="mt-1 text-[20px] font-bold leading-tight text-zinc-950">
+      <div className="mt-1 text-[20px] font-black leading-tight text-[#081225]">
         {value}
       </div>
     </div>
   )
 }
 
-function ControlCard({
+function DashboardPanel({
   title,
-  stat,
-  description,
+  eyebrow,
   href,
-  icon,
+  action,
+  children,
 }: {
   title: string
-  stat: string
-  description: string
+  eyebrow: string
   href: string
-  icon: React.ReactNode
+  action: string
+  children: React.ReactNode
 }) {
   return (
-    <Link
-      href={href}
-      className="group flex min-h-[128px] flex-col justify-between rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-400 hover:shadow-md"
-    >
-      <div>
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <div className="text-[11px] font-bold uppercase tracking-wide text-zinc-400">
-              {stat}
-            </div>
-            <h2 className="mt-1 text-[16px] font-bold text-zinc-950">
-              {title}
-            </h2>
+    <section className="flex h-[340px] min-h-0 flex-col overflow-hidden rounded-xl border border-[#d7dee8] bg-white shadow-sm">
+      <div className="flex items-center justify-between border-b border-[#d7dee8] px-3 py-2">
+        <div>
+          <div className="text-[10px] font-black uppercase tracking-wide text-[#4b5f7a]">
+            {eyebrow}
           </div>
-
-          <div className="text-slate-500">
-            {icon}
-          </div>
+          <h2 className="text-[15px] font-black text-[#081225]">
+            {title}
+          </h2>
         </div>
 
-        <p className="mt-3 text-[12px] leading-5 text-zinc-500">
-          {description}
-        </p>
+        <Link
+          href={href}
+          className="text-[11px] font-black uppercase text-[#004fc4] transition hover:text-[#003b94]"
+        >
+          {action}
+        </Link>
       </div>
 
-     <div className="mt-3 h-4" />
-    </Link>
+      <div className="min-h-0 flex-1 p-3">
+        {children}
+      </div>
+    </section>
+  )
+}
+
+function MiniTable({
+  headers,
+  rows,
+  empty,
+}: {
+  headers: string[]
+  rows: React.ReactNode[]
+  empty: string
+}) {
+  return (
+    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-[#d7dee8]">
+      <div
+        className="grid shrink-0 border-b border-[#d7dee8] bg-[#f8fafc] px-2 py-1.5 text-[10px] font-black uppercase tracking-wide text-[#4b5f7a]"
+        style={{ gridTemplateColumns: `repeat(${headers.length}, minmax(0, 1fr))` }}
+      >
+        {headers.map((header) => (
+          <div key={header}>{header}</div>
+        ))}
+      </div>
+
+      <div className="min-h-0 flex-1 divide-y divide-[#d7dee8] overflow-y-auto overscroll-contain">
+        {rows.length > 0 ? (
+          rows
+        ) : (
+          <div className="px-2 py-6 text-center text-[12px] font-semibold text-[#4b5f7a]">
+            {empty}
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
 
@@ -146,173 +182,173 @@ export default async function DashboardPage() {
   const simulationsCount = simulations?.length || 0
   const latestAnalysis = simulations?.[0] || null
 
-  const controlCards = [
-    {
-      title: 'Portfolio',
-      stat: 'PORTFOLIO',
-      description: `${formatNumber(portfolioCount)} positions monitored as portfolio context for CRPM decision support.`,
-      href: '/dashboard/portfolio',
-      icon: <BriefcaseBusiness size={19} />,
-    },
-    {
-      title: 'Watchlist',
-      stat: 'WATCHLIST',
-      description: `${formatNumber(watchlistCount)} tickers monitored with CRPM expected move, implied volatility and analysis age.`,
-      href: '/dashboard/watchlist',
-      icon: <Eye size={19} />,
-    },
-    {
-      title: 'CRPM Simulator',
-      stat: 'ANALYSIS ENGINE',
-      description: 'Run quantitative options analysis and generate CRPM machine projections.',
-      href: '/simulatore-pro',
-      icon: <BarChart3 size={19} />,
-    },
-    {
-      title: 'Simulations History',
-      stat: 'CRPM ANALYSIS',
-      description: `${formatNumber(simulationsCount)} saved snapshots with spot, IV, expected move and timestamp.`,
-      href: '/dashboard/simulations',
-      icon: <Clock3 size={19} />,
-    },
-    {
-  title: 'CRPM Assistant',
-  stat: 'UNDER DEVELOPMENT',
-  description:
-    'Portfolio-aware assistant based on the CRPM methodology and historical analysis.',
-  href: '/dashboard/assistant',
-  icon: <Bot size={19} />,
-},
-    {
-      title: 'Subscription / Account',
-      stat: isPremium ? 'PREMIUM ACTIVE' : 'ACCESS STATUS',
-      description: 'Subscription status, account access and billing management.',
-      href: '/dashboard/account',
-      icon: <CreditCard size={19} />,
-    },
-  ]
+  const latestSimulationByTicker = new Map<string, any>()
+
+  simulations?.forEach((item) => {
+    const ticker = String(item.ticker || '').toUpperCase()
+    if (ticker && !latestSimulationByTicker.has(ticker)) {
+      latestSimulationByTicker.set(ticker, item)
+    }
+  })
+
+
+  const portfolioRows =
+    portfolio?.map((item) => {
+      const quantity = Number(item.quantity || 0)
+      const marketPrice = Number(item.market_price || 0)
+      const averageCost = Number(item.average_cost || 0)
+      const marketValue = quantity * marketPrice
+      const unrealizedPL = quantity * (marketPrice - averageCost)
+
+      return (
+        <div
+          key={item.id}
+          className="grid grid-cols-4 items-center px-2 py-2 text-[12px] font-bold text-[#081225]"
+        >
+          <div className="truncate">{item.ticker}</div>
+          <div className="text-right">{formatNumber(quantity)}</div>
+          <div className="text-right">{formatMoney(marketValue)}</div>
+          <div className={unrealizedPL >= 0 ? 'text-right text-[#009a57]' : 'text-right text-[#ff1f2d]'}>
+            {formatMoney(unrealizedPL)}
+          </div>
+        </div>
+      )
+    }) || []
+
+  const watchlistRows =
+    watchlist?.map((item) => {
+      const ticker = String(item.ticker || '').toUpperCase()
+      const latest = latestSimulationByTicker.get(ticker)
+
+      return (
+        <div
+          key={item.id}
+          className="grid grid-cols-4 items-center px-2 py-2 text-[12px] font-bold text-[#081225]"
+        >
+          <div className="truncate">{ticker}</div>
+          <div className="text-right">{latest ? formatMoney(Number(latest.spot)) : '-'}</div>
+          <div className="text-right">{latest ? formatPercent(Number(latest.iv)) : '-'}</div>
+          <div className="text-right">{latest ? formatShortDate(latest.created_at) : '-'}</div>
+        </div>
+      )
+    }) || []
+
+  const simulationRows =
+    simulations?.map((item) => (
+      <Link
+        key={item.id}
+        href={`/dashboard/simulations?selected=${item.id}`}
+        className="grid grid-cols-4 items-center px-2 py-2 text-[12px] font-bold text-[#081225] transition hover:bg-[#eff6ff]"
+      >
+        <div className="truncate">{item.ticker}</div>
+        <div className="text-right">{formatMoney(Number(item.spot))}</div>
+        <div className="text-right">{formatPercent(Number(item.iv))}</div>
+        <div className="text-right text-[#004fc4]">{formatShortDate(item.created_at)}</div>
+      </Link>
+    )) || []
 
   return (
-    <main className="min-h-screen bg-zinc-100 p-4 text-zinc-950 md:p-6">
-      <div className="mx-auto max-w-7xl">
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-          <div className="border-b border-zinc-200 pb-4">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-zinc-400">
-                  QuantumMathTrading
-                </p>
-
-                <h1 className="mt-2 text-3xl font-bold tracking-tight">
-                  CRPM Control Center
-                </h1>
-
-                <p className="mt-1 text-sm text-zinc-500">
-                  Quantitative options analysis,{' '}
-                  <span className="font-bold text-slate-700">
-                    Calculated Risk and Profit Machines (CRPM)
-                  </span>{' '}
-                  simulations, and portfolio decision support.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <span
-                  className={
-                    isPremium
-                      ? 'hidden rounded-md bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700 md:inline-flex'
-                      : 'hidden rounded-md bg-red-50 px-2.5 py-1 text-[11px] font-bold text-red-700 md:inline-flex'
-                  }
-                >
-                  {isPremium ? 'Premium Active' : 'Free / Not Active'}
-                </span>
-
-                <UserButton />
-              </div>
+    <main className="h-screen overflow-hidden bg-white p-4 text-[#0b1220]">
+      <div className="mx-auto flex h-full max-w-[1920px] flex-col gap-3 overflow-hidden">
+        <header className="flex shrink-0 items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="text-[10px] font-black uppercase tracking-[0.28em] text-[#4b5f7a]">
+              QuantumMathTrading
             </div>
-
-            <DashboardNav active="dashboard" />
+            <h1 className="text-2xl font-black leading-tight tracking-tight text-[#081225]">
+              CRPM Control Center
+            </h1>
           </div>
 
+          <div className="flex shrink-0 items-center justify-end gap-2">
+            <CRPMAppNav active="dashboard" />
+            <UserButton />
+          </div>
+        </header>
+
+        <section className="min-h-0 flex-1 overflow-auto rounded-2xl border border-[#d7dee8] bg-white p-3 shadow-sm">
+
           {latestAnalysis && (
-            <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="mt-3 rounded-xl border border-[#d7dee8] bg-white p-3 shadow-sm">
+              <div className="grid gap-4 lg:grid-cols-[minmax(220px,1fr)_minmax(520px,2fr)_140px] lg:items-center">
                 <div>
-                  <div className="text-[11px] font-bold uppercase tracking-wide text-slate-500">
-                    LATEST CRPM SNAPSHOT
+                  <div className="text-[11px] font-black uppercase tracking-wide text-[#4b5f7a]">
+                    Latest CRPM Snapshot
                   </div>
 
-                  <h2 className="mt-1 text-xl font-bold text-zinc-950">
+                  <h2 className="mt-1 text-xl font-black text-[#081225]">
                     {latestAnalysis.ticker}
                   </h2>
 
-                  <p className="mt-1 text-sm text-zinc-500">
+                  <p className="mt-1 text-sm font-semibold text-[#26364d]">
                     {latestAnalysis.company || 'Most recent quantitative analysis generated by the CRPM engine.'}
                   </p>
                 </div>
-<div>
-  <div className="text-[11px] uppercase text-zinc-400">
-    Machines
-  </div>
-  <div className="font-semibold">
-    {Array.isArray(latestAnalysis.result?.machines)
-      ? `${latestAnalysis.result.machines.length} available`
-      : 'Not available'}
-  </div>
-</div>
+
                 <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm lg:grid-cols-5">
                   <div>
-                    <div className="text-[11px] uppercase text-zinc-400">
+                    <div className="text-[11px] uppercase text-[#4b5f7a]">
+                      Machines
+                    </div>
+                    <div className="font-black text-[#081225]">
+                      {Array.isArray(latestAnalysis.result?.machines)
+                        ? `${latestAnalysis.result.machines.length} available`
+                        : 'Not available'}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-[11px] uppercase text-[#4b5f7a]">
                       Spot
                     </div>
-                    <div className="font-semibold">
+                    <div className="font-black text-[#081225]">
                       {formatMoney(Number(latestAnalysis.spot))}
                     </div>
                   </div>
 
                   <div>
-                    <div className="text-[11px] uppercase text-zinc-400">
+                    <div className="text-[11px] uppercase text-[#4b5f7a]">
                       IV
                     </div>
-                    <div className="font-semibold">
+                    <div className="font-black text-[#081225]">
                       {Number(latestAnalysis.iv).toFixed(2)}%
                     </div>
                   </div>
 
                   <div>
-                    <div className="text-[11px] uppercase text-zinc-400">
+                    <div className="text-[11px] uppercase text-[#4b5f7a]">
                       Expected Move
                     </div>
-                    <div className="font-semibold">
-                    ± {formatMoney(Number(latestAnalysis.expected_move))}
-<span className="ml-1 text-[12px] font-medium text-zinc-500">
-  (
-  {Number(latestAnalysis.spot) !== 0
-    ? `${((Number(latestAnalysis.expected_move) / Number(latestAnalysis.spot)) * 100).toFixed(2)}%`
-    : '-'}
-  )
-</span>
+                    <div className="font-black text-[#081225]">
+                      ± {formatMoney(Number(latestAnalysis.expected_move))}
+                      <span className="ml-1 text-[12px] font-semibold text-[#26364d]">
+                        (
+                        {Number(latestAnalysis.spot) !== 0
+                          ? `${((Number(latestAnalysis.expected_move) / Number(latestAnalysis.spot)) * 100).toFixed(2)}%`
+                          : '-'}
+                        )
+                      </span>
                     </div>
                   </div>
 
                   <div>
-                    <div className="text-[11px] uppercase text-zinc-400">
+                    <div className="text-[11px] uppercase text-[#4b5f7a]">
                       DTE
                     </div>
-                    <div className="font-semibold">
+                    <div className="font-black text-[#081225]">
                       {latestAnalysis.dte}
                     </div>
                   </div>
                 </div>
 
                 <div className="flex flex-col items-start gap-2 lg:items-end">
-                  <div className="text-xs text-zinc-500">
+                  <div className="text-xs font-semibold text-[#26364d]">
                     {formatDate(latestAnalysis.created_at)}
                   </div>
 
                   <Link
                     href={`/dashboard/simulations/${latestAnalysis.id}`}
-                    className="inline-flex h-8 items-center justify-center rounded-md border border-slate-600 bg-slate-700 px-3 text-[12px] font-semibold text-white shadow-sm transition hover:bg-slate-600"
+                    className="inline-flex h-8 items-center justify-center rounded-md border border-[#004fc4] bg-[#004fc4] px-3 text-[12px] font-black text-white shadow-sm transition hover:bg-[#003b94]"
                   >
                     Open Analysis
                   </Link>
@@ -321,7 +357,7 @@ export default async function DashboardPage() {
             </div>
           )}
 
-          <div className="mt-4 grid gap-3 md:grid-cols-4">
+          <div className="mt-3 grid gap-3 md:grid-cols-4">
             <MetricCard
               label="Portfolio"
               value={`${formatNumber(portfolioCount)} Positions`}
@@ -333,22 +369,77 @@ export default async function DashboardPage() {
             />
 
             <MetricCard
-  label="CRPM Analysis"
-  value={`${formatNumber(simulationsCount)} Snapshots`}
-/>
+              label="CRPM Analysis"
+              value={`${formatNumber(simulationsCount)} Snapshots`}
+            />
 
             <MetricCard
-              label="Last Snapshot"
-              value={formatDate(latestSnapshot)}
+              label="Premium Status"
+              value={isPremium ? 'Active' : 'Not Active'}
             />
           </div>
 
-          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {controlCards.map((card) => (
-              <ControlCard key={card.title} {...card} />
-            ))}
+          <div className="mt-3 grid gap-3 xl:grid-cols-3">
+            <DashboardPanel
+              title="Portfolio Overview"
+              eyebrow="Portfolio"
+              href="/dashboard/portfolio"
+              action="Open Portfolio"
+            >
+              <MiniTable
+                headers={['Ticker', 'Qty', 'Mkt Value', 'P/L']}
+                rows={portfolioRows}
+                empty="No portfolio positions yet."
+              />
+            </DashboardPanel>
+
+            <DashboardPanel
+              title="Watchlist Overview"
+              eyebrow="Watchlist"
+              href="/dashboard/watchlist"
+              action="Open Watchlist"
+            >
+              <MiniTable
+                headers={['Ticker', 'Spot', 'IV', 'Analysis']}
+                rows={watchlistRows}
+                empty="No watchlist tickers yet."
+              />
+            </DashboardPanel>
+
+            <DashboardPanel
+              title="Recent Simulations"
+              eyebrow="CRPM Analysis"
+              href="/dashboard/simulations"
+              action="Open History"
+            >
+              <MiniTable
+                headers={['Ticker', 'Spot', 'IV', 'Time']}
+                rows={simulationRows}
+                empty="No saved simulations yet."
+              />
+            </DashboardPanel>
           </div>
-        </div>
+
+          <div className="mt-3 rounded-xl border border-[#d7dee8] bg-white p-3 shadow-sm">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <div className="text-[11px] font-black uppercase tracking-wide text-[#4b5f7a]">
+                  CRPM Assistant
+                </div>
+                <h2 className="text-[15px] font-black text-[#081225]">
+                  Portfolio-aware assistant
+                </h2>
+                <p className="mt-1 text-[12px] font-semibold text-[#26364d]">
+                  Assistant based on the CRPM methodology, portfolio context and historical analysis.
+                </p>
+              </div>
+
+              <span className="rounded-md border border-[#d7dee8] bg-[#f8fafc] px-3 py-1 text-[11px] font-black uppercase text-[#4b5f7a]">
+                Coming Soon
+              </span>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
   )

@@ -1,10 +1,10 @@
 import Link from 'next/link'
+import CRPMThemeToggle from '@/components/crpm/CRPMThemeToggle'
 import { currentUser } from '@clerk/nextjs/server'
 import CRPMBadge from '@/components/crpm/CRPMBadge'
 import CRPMLogo from '@/components/crpm/CRPMLogo'
 import CRPMPanel from '@/components/crpm/CRPMPanel'
 import { CRPMThemeProvider } from '@/components/crpm/CRPMThemeProvider'
-import CRPMThemeToggle from '@/components/crpm/CRPMThemeToggle'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
 const navItems = [
