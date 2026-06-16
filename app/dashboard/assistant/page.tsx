@@ -34,10 +34,10 @@ function ContextCard({
   icon: React.ReactNode
 }) {
   return (
-    <div className="rounded-xl border border-[#d7dee8] bg-white p-4 shadow-sm">
+    <div className="rounded-xl border border-[#d7dee8] bg-white p-3 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f1f5f9] text-[#334155]">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f1f5f9] text-[#334155]">
             {icon}
           </div>
 
@@ -45,7 +45,7 @@ function ContextCard({
             <div className="text-[11px] font-black uppercase tracking-wide text-[#4b5f7a]">
               {label}
             </div>
-            <div className="mt-1 text-[20px] font-black text-[#081225]">
+            <div className="mt-0.5 text-[18px] font-black text-[#081225]">
               {value}
             </div>
           </div>
@@ -88,8 +88,9 @@ export default async function CRPMAssistantPage() {
   const latestAnalysis = simulations?.[0] || null
 
   return (
-    <main className="min-h-screen bg-white p-4 text-[#0b1220]">
-      <div className="mx-auto flex w-full max-w-[1920px] flex-col gap-3">
+    <main className="min-h-screen bg-zinc-50 p-4 text-[#0b1220]">
+      <div className="mx-auto w-full rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+        <div className="flex flex-col gap-3">
         <CRPMHeader
           active="assistant"
           title="CRPM Assistant"
@@ -97,9 +98,9 @@ export default async function CRPMAssistantPage() {
         />
 
         <section className="rounded-2xl border border-[#d7dee8] bg-white p-3 shadow-sm">
-          <div className="rounded-xl border border-[#d7dee8] bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-[#d7dee8] bg-white p-3 shadow-sm">
             <div className="flex items-start gap-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#334155] text-white">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#334155] text-white">
                 <Bot size={22} />
               </div>
 
@@ -108,18 +109,18 @@ export default async function CRPMAssistantPage() {
                   Assistant Console v0.3
                 </div>
 
-                <h2 className="mt-1 text-xl font-black text-[#081225]">
+                <h2 className="mt-0.5 text-lg font-black text-[#081225]">
                   Context layer connected
                 </h2>
 
-                <p className="mt-2 max-w-4xl text-sm font-semibold leading-6 text-[#4b5f7a]">
+                <p className="mt-1 max-w-4xl text-[12px] font-semibold leading-5 text-[#4b5f7a]">
                   This step connects the Assistant page to the SaaS data context. No AI reasoning is active yet. The page now reads portfolio, watchlist and historical simulation context from Supabase.
                 </p>
               </div>
             </div>
           </div>
 
-          <section className="mt-4 grid gap-3 md:grid-cols-4">
+          <section className="mt-3 grid gap-3 md:grid-cols-4">
             <ContextCard
               label="Portfolio Context"
               value={`${portfolio?.length || 0} positions`}
@@ -149,24 +150,24 @@ export default async function CRPMAssistantPage() {
             />
           </section>
 
-          <section className="mt-4 grid gap-3 md:grid-cols-2">
-            <div className="rounded-xl border border-[#d7dee8] bg-white p-4 shadow-sm">
+          <section className="mt-3 grid gap-3 md:grid-cols-2">
+            <div className="rounded-xl border border-[#d7dee8] bg-white p-3 shadow-sm">
               <div className="text-[11px] font-black uppercase tracking-wide text-[#4b5f7a]">
                 Latest Available Analysis
               </div>
 
-              <h3 className="mt-2 text-[18px] font-black text-[#081225]">
+              <h3 className="mt-1 text-[18px] font-black text-[#081225]">
                 {latestAnalysis ? latestAnalysis.ticker : 'No analysis available'}
               </h3>
 
-              <p className="mt-1 text-sm font-semibold text-[#4b5f7a]">
+              <p className="mt-1 text-[12px] font-semibold text-[#4b5f7a]">
                 {latestAnalysis
                   ? `${latestAnalysis.company || 'Latest CRPM snapshot'} · ${formatDate(latestAnalysis.created_at)}`
                   : 'Run a CRPM simulation to create the first analysis context.'}
               </p>
             </div>
 
-            <div className="rounded-xl border border-[#d7dee8] bg-white p-4 shadow-sm">
+            <div className="rounded-xl border border-[#d7dee8] bg-white p-3 shadow-sm">
               <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-wide text-[#4b5f7a]">
                 <ShieldCheck size={15} />
                 Product Boundary
@@ -178,6 +179,7 @@ export default async function CRPMAssistantPage() {
             </div>
           </section>
         </section>
+        </div>
       </div>
     </main>
   )
