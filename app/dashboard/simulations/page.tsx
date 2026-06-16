@@ -219,8 +219,8 @@ export default async function SimulationsHistoryPage({
 
   return (
     <CRPMThemeProvider>
-      <main className="crpm-simulations-page h-screen overflow-hidden bg-[var(--crpm-bg)] p-4 text-[var(--crpm-text)]">
-        <div className="mx-auto flex h-full w-full max-w-[1920px] flex-col gap-3 overflow-hidden">
+      <main className="crpm-simulations-page h-screen overflow-hidden bg-zinc-50 p-4 text-[var(--crpm-text)]">
+        <div className="mx-auto flex h-full w-full max-w-[1920px] flex-col gap-3 overflow-hidden rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
           <CRPMHeader
             active="simulations"
             title="Simulations History & Detail"
