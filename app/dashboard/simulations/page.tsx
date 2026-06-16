@@ -1,18 +1,12 @@
 import Link from 'next/link'
-import CRPMThemeToggle from '@/components/crpm/CRPMThemeToggle'
 import { currentUser } from '@clerk/nextjs/server'
 import CRPMBadge from '@/components/crpm/CRPMBadge'
 import CRPMLogo from '@/components/crpm/CRPMLogo'
 import CRPMPanel from '@/components/crpm/CRPMPanel'
+import CRPMHeader from '@/components/crpm/CRPMHeader'
 import { CRPMThemeProvider } from '@/components/crpm/CRPMThemeProvider'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
-const navItems = [
-  { label: 'Dashboard', href: '/dashboard' },
-  { label: 'Portfolio', href: '/dashboard/portfolio' },
-  { label: 'Watchlist', href: '/dashboard/watchlist' },
-  { label: 'Simulator', href: '/simulatore-pro' },
-] as const
 
 type PayoffKind = 'longCall' | 'shortPut' | 'marriedPut' | 'coveredCall' | 'assigned'
 
@@ -227,35 +221,10 @@ export default async function SimulationsHistoryPage({
     <CRPMThemeProvider>
       <main className="crpm-simulations-page h-screen overflow-hidden bg-[var(--crpm-bg)] p-4 text-[var(--crpm-text)]">
         <div className="mx-auto flex h-full w-full max-w-[1920px] flex-col gap-3 overflow-hidden">
-          <header className="flex shrink-0 items-center justify-between gap-4">
-            <div>
-              <div className="text-[10px] font-black uppercase tracking-[0.28em] text-[var(--crpm-faint)]">
-                QuantumMathTrading
-              </div>
-              <h1 className="text-2xl font-black leading-tight tracking-tight text-[var(--crpm-heading)]">
-                Simulations History & Detail
-              </h1>
-            </div>
-
-            <div className="flex shrink-0 items-center gap-2">
-              <nav className="hidden items-center gap-2 lg:flex">
-                {navItems.map((item) => {
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-[var(--crpm-border)] bg-[var(--crpm-panel)] px-4 text-[12px] font-black text-[var(--crpm-blue)] shadow-sm transition hover:border-[var(--crpm-blue)] hover:bg-[var(--crpm-soft)] active:translate-y-px" 
-                    >
-                      <NavIcon label={item.label} />
-                      {item.label}
-                    </Link>
-                  )
-                })}
-              </nav>
-
-              <CRPMThemeToggle />
-            </div>
-          </header>
+          <CRPMHeader
+            active="simulations"
+            title="Simulations History & Detail"
+          />
 
           <div className="grid min-h-0 flex-1 gap-3 overflow-hidden xl:grid-cols-[minmax(500px,0.40fr)_minmax(0,0.60fr)]">
             <section className="flex min-h-0 min-w-0 flex-col gap-2 overflow-hidden">
@@ -501,41 +470,6 @@ export default async function SimulationsHistoryPage({
         </div>
       </main>
     </CRPMThemeProvider>
-  )
-}
-
-
-function NavIcon({ label }: { label: string }) {
-  const common = "h-3.5 w-3.5 stroke-[2.4]"
-
-  if (label === 'Dashboard') {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" className={common} aria-hidden="true">
-        <path d="M4 5h7v7H4V5Zm9 0h7v4h-7V5ZM4 14h7v5H4v-5Zm9-3h7v8h-7v-8Z" stroke="currentColor" />
-      </svg>
-    )
-  }
-
-  if (label === 'Portfolio') {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" className={common} aria-hidden="true">
-        <path d="M8 7V6a3 3 0 0 1 3-3h2a3 3 0 0 1 3 3v1M4 9h16v10H4V9Zm0 4h16" stroke="currentColor" />
-      </svg>
-    )
-  }
-
-  if (label === 'Watchlist') {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" className={common} aria-hidden="true">
-        <path d="M12 5l2 4 4.5.7-3.3 3.2.8 4.5-4-2.1-4 2.1.8-4.5L5.5 9.7 10 9l2-4Z" stroke="currentColor" />
-      </svg>
-    )
-  }
-
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={common} aria-hidden="true">
-      <path d="M4 16l5-5 3 3 7-8M4 20h16" stroke="currentColor" />
-    </svg>
   )
 }
 

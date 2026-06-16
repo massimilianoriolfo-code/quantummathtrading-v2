@@ -1,7 +1,6 @@
 import { currentUser } from '@clerk/nextjs/server'
-import { UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
-import CRPMAppNav from '@/components/crpm/CRPMAppNav'
+import CRPMHeader from '@/components/crpm/CRPMHeader'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
 function formatNumber(value: number) {
@@ -250,21 +249,10 @@ export default async function DashboardPage() {
   return (
     <main className="h-screen overflow-hidden bg-white p-4 text-[#0b1220]">
       <div className="mx-auto flex h-full max-w-[1920px] flex-col gap-3 overflow-hidden">
-        <header className="flex shrink-0 items-start justify-between gap-4">
-          <div className="min-w-0">
-            <div className="text-[10px] font-black uppercase tracking-[0.28em] text-[#4b5f7a]">
-              QuantumMathTrading
-            </div>
-            <h1 className="text-2xl font-black leading-tight tracking-tight text-[#081225]">
-              CRPM Control Center
-            </h1>
-          </div>
-
-          <div className="flex shrink-0 items-center justify-end gap-2">
-            <CRPMAppNav active="dashboard" />
-            <UserButton />
-          </div>
-        </header>
+        <CRPMHeader
+          active="dashboard"
+          title="CRPM Control Center"
+        />
 
         <section className="min-h-0 flex-1 overflow-auto rounded-2xl border border-[#d7dee8] bg-white p-3 shadow-sm">
 
