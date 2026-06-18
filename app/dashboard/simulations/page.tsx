@@ -220,7 +220,7 @@ export default async function SimulationsHistoryPage({
   return (
     <CRPMThemeProvider>
       <main className="crpm-simulations-page h-screen overflow-hidden bg-zinc-50 p-4 text-[var(--crpm-text)]">
-        <div className="mx-auto flex h-full w-full max-w-[1920px] flex-col gap-3 overflow-hidden rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+        <div className="mx-auto mt-8 flex h-full w-full max-w-[1920px] flex-col gap-3 overflow-visible rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
           <CRPMHeader
             active="simulations"
             title="Simulations History & Detail"
@@ -238,7 +238,7 @@ export default async function SimulationsHistoryPage({
                       {total} snapshots · {uniqueTickers} tickers
                     </div>
                     <div className="mt-0.5 text-[10px] font-black uppercase tracking-wide text-[var(--crpm-blue)]">
-                      Click a row to inspect details →
+                      Click a row to inspect details ▶
                     </div>
                   </div>
                 </div>
@@ -280,7 +280,7 @@ export default async function SimulationsHistoryPage({
                                 {item.ticker}
                               </span>
                               {isSelected ? (
-                                <span className="text-[10px] font-black text-[var(--crpm-blue)]">→</span>
+                                <span className="text-[10px] font-black text-[var(--crpm-blue)]">▶</span>
                               ) : null}
                             </div>
 
@@ -329,7 +329,7 @@ export default async function SimulationsHistoryPage({
 
                         <div className="min-w-0">
                           <div className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--crpm-blue)]">
-                            Selected from Saved CRPM Snapshots →
+                            Selected from Saved CRPM Snapshots ▶
                           </div>
                           <div className="flex items-end gap-2">
                             <h2 className="text-[28px] font-black leading-none tracking-tight text-[var(--crpm-heading)]">
@@ -456,11 +456,11 @@ export default async function SimulationsHistoryPage({
         </div>
 
         <h2 className="mt-2 text-2xl font-black text-[var(--crpm-heading)]">
-          Select a saved snapshot
+          Select a snapshot from the table on the left
         </h2>
 
         <p className="mt-3 max-w-lg text-sm font-semibold leading-6 text-[var(--crpm-muted)]">
-          Select a simulation from the archive to review its CRPM analysis, generated machines and payoff profile.
+          Choose any saved simulation to review Expected Move, ATM IV, CRPM Machines and Payoff Analysis.
         </p>
       </div>
     </CRPMPanel>
@@ -483,11 +483,11 @@ function EmptySimulationSelection() {
         </div>
 
         <h2 className="mt-2 text-2xl font-black text-[var(--crpm-heading)]">
-          Select a saved snapshot
+          Select a snapshot from the table on the left
         </h2>
 
         <p className="mt-3 max-w-lg text-sm font-semibold leading-6 text-[var(--crpm-muted)]">
-          Select a simulation from the archive to review its CRPM analysis, generated machines and payoff profile.
+          Choose any saved simulation to review Expected Move, ATM IV, CRPM Machines and Payoff Analysis.
         </p>
       </div>
     </CRPMPanel>

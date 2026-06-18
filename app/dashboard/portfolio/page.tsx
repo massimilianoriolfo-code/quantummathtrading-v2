@@ -191,7 +191,7 @@ export default async function PortfolioPage() {
 
   return (
     <main className="min-h-screen bg-zinc-50 p-4 text-[12px] text-zinc-950">
-      <div className="mx-auto w-full rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+      <div className="mx-auto mt-8 w-full overflow-visible rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
         <CRPMHeader
           active="portfolio"
           title="Portfolio"
