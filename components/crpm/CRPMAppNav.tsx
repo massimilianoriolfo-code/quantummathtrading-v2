@@ -1,20 +1,7 @@
 import Link from 'next/link'
-import {
-  BarChart3,
-  Bot,
-  BriefcaseBusiness,
-  Clock3,
-  LayoutDashboard,
-  Star,
-} from 'lucide-react'
+import { BarChart3, Bot, BriefcaseBusiness, Clock3, LayoutDashboard, Star } from 'lucide-react'
 
-type ActiveNav =
-  | 'dashboard'
-  | 'portfolio'
-  | 'watchlist'
-  | 'simulations'
-  | 'assistant'
-  | 'simulator'
+type ActiveNav = 'dashboard' | 'portfolio' | 'watchlist' | 'simulations' | 'assistant' | 'simulator'
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard', active: 'dashboard', icon: LayoutDashboard },
@@ -27,10 +14,11 @@ const navItems = [
 
 export default function CRPMAppNav({ active }: { active?: ActiveNav }) {
   return (
-    <nav className="relative z-30 flex flex-nowrap items-end justify-end gap-0 -mb-[17px] pr-12">
-      {navItems.map((item) => {
+    <nav className="flex flex-nowrap items-end justify-end gap-0">
+      {navItems.map((item, index) => {
         const Icon = item.icon
         const isActive = active === item.active
+        const isLast = index === navItems.length - 1
 
         return (
           <Link
@@ -38,8 +26,8 @@ export default function CRPMAppNav({ active }: { active?: ActiveNav }) {
             href={item.href}
             className={
               isActive
-                ? 'relative z-30 -mb-px inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-t-xl border border-slate-300 border-b-white bg-white px-4 text-[12px] font-black text-slate-950 shadow-none transition'
-                : 'relative z-20 inline-flex h-10 shrink-0 items-center justify-center gap-2 border border-slate-300 border-r-0 bg-slate-100 px-4 text-[12px] font-black text-slate-600 transition hover:bg-white hover:text-slate-950'
+                ? 'relative z-50 -mb-px inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-t-xl border border-[#d7e1ec] border-b-white bg-white px-5 text-[12px] font-black text-[#081225] shadow-none'
+                : `relative z-40 inline-flex h-9 shrink-0 items-center justify-center gap-2 border border-[#d7e1ec] bg-[#edf2f8] px-5 text-[12px] font-black text-[#4b5f7a] shadow-none hover:bg-[#edf2f8] hover:text-[#4b5f7a] ${isLast ? '' : 'border-r-0'}`
             }
           >
             <Icon size={14} />
