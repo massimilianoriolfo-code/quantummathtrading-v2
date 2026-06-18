@@ -27,7 +27,7 @@ export default function CRPMAppNav({ active }: { active?: ActiveNav }) {
             className={
               isActive
                 ? 'relative z-50 -mb-px inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-t-xl border border-[#d7e1ec] border-b-white bg-white px-5 text-[12px] font-black text-[#081225] shadow-none'
-                : `relative z-40 inline-flex h-9 shrink-0 items-center justify-center gap-2 border border-[#d7e1ec] bg-[#edf2f8] px-5 text-[12px] font-black text-[#4b5f7a] shadow-none hover:bg-[#edf2f8] hover:text-[#4b5f7a] ${isLast ? '' : 'border-r-0'}`
+                : `relative z-40 inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-t-xl border border-[#d7e1ec] bg-[#edf2f8] px-5 text-[12px] font-black text-[#4b5f7a] shadow-none hover:bg-[#edf2f8] hover:text-[#4b5f7a] ${isLast ? '' : 'border-r-0'}`
             }
           >
             <Icon size={14} />
