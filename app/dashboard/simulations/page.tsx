@@ -4,6 +4,7 @@ import CRPMBadge from '@/components/crpm/CRPMBadge'
 import CRPMLogo from '@/components/crpm/CRPMLogo'
 import CRPMPanel from '@/components/crpm/CRPMPanel'
 import CRPMHeader from '@/components/crpm/CRPMHeader'
+import DeleteSimulationSnapshotButton from './DeleteSimulationSnapshotButton'
 import { CRPMThemeProvider } from '@/components/crpm/CRPMThemeProvider'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
@@ -247,7 +248,7 @@ export default async function SimulationsHistoryPage({
               <CRPMPanel className="flex min-h-0 flex-1 flex-col overflow-visible">
                 {rows.length > 0 ? (
                   <div className="min-h-0 flex-1 overflow-auto">
-                    <div className="sticky top-0 z-10 grid grid-cols-[72px_86px_70px_106px_90px_42px] border-b border-[var(--crpm-border)] bg-[var(--crpm-panel-2)] px-3 py-2 text-[9px] font-black uppercase tracking-wide text-[var(--crpm-faint)]">
+                    <div className="sticky top-0 z-10 grid grid-cols-[72px_76px_58px_98px_82px_38px] border-b border-[var(--crpm-border)] bg-[var(--crpm-panel-2)] px-3 py-2 text-[9px] font-black uppercase tracking-wide text-[var(--crpm-faint)]">
                       <div>Ticker</div>
                       <div className="text-right">Spot</div>
                       <div className="text-right">IV</div>
@@ -265,15 +266,15 @@ export default async function SimulationsHistoryPage({
                         const isSelected = selectedSimulation?.id === item.id
 
                         return (
-                          <Link
+                          <div
                             key={item.id}
-                            href={`/dashboard/simulations?selected=${item.id}`}
-                            className={`grid grid-cols-[72px_86px_70px_106px_90px_42px] items-center border-b border-[var(--crpm-border)] px-3 py-2 text-[12px] transition ${
+                            className={`grid grid-cols-[72px_76px_58px_98px_82px_38px] relative items-center border-b border-[var(--crpm-border)] px-3 py-2 pr-10 text-[12px] transition ${
                               isSelected
                                 ? 'bg-[var(--crpm-soft)] ring-1 ring-inset ring-[var(--crpm-blue)] shadow-[inset_4px_0_0_var(--crpm-blue)]'
                                 : 'hover:bg-[var(--crpm-soft)]'
                             }`}
                           >
+                            <Link href={`/dashboard/simulations?selected=${item.id}`} className="contents">
                             <div className="flex items-center gap-2">
                               <CRPMLogo ticker={item.ticker} size="xs" />
                               <span className="font-black text-[var(--crpm-heading)] whitespace-nowrap whitespace-nowrap">
@@ -306,7 +307,12 @@ export default async function SimulationsHistoryPage({
                             <div className="text-right font-bold text-[var(--crpm-muted)]">
                               {item.dte}D
                             </div>
-                          </Link>
+                            </Link>
+
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                              <DeleteSimulationSnapshotButton id={item.id} ticker={item.ticker} />
+                            </div>
+                          </div>
                         )
                       })}
                     </div>

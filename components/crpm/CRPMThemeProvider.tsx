@@ -16,7 +16,7 @@ export function CRPMThemeProvider({
 }: {
   children: React.ReactNode
 }) {
-  const [theme, setThemeState] = useState<CRPMTheme>('dark')
+  const [theme, setThemeState] = useState<CRPMTheme>('light')
 
   useEffect(() => {
     const saved = window.localStorage.getItem('crpm-theme')
