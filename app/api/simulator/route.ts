@@ -508,7 +508,7 @@ export async function GET(req: NextRequest) {
           `${money(coveredCallProfit)} (${percent(coveredCallProfit, capital)})`,
 
         maxRisk:
-          'Finite stock ownership risk',
+          'Stock ownership risk',
 
         description:
           'Generates yield on owned shares.',
@@ -542,7 +542,7 @@ export async function GET(req: NextRequest) {
           'Enhanced Yield',
 
         maxRisk:
-          'Reduced Cost Basis',
+          'Lower Cost Basis',
 
         description:
           'Combines short put and covered call structures.',

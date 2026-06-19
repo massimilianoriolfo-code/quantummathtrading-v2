@@ -366,8 +366,8 @@ export default async function SimulationsHistoryPage({
                       <h2 className="text-base font-black uppercase tracking-[0.20em] text-[var(--crpm-blue)]">
                         CRPM Machines
                       </h2>
-                      <span className="text-[11px] font-bold text-[var(--crpm-muted)]">
-                        Click P/L to update the payoff panel below.
+                      <span className="rounded-md border border-dashed border-[var(--crpm-blue)]/35 bg-white/45 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-[var(--crpm-blue)]">
+                        Use P/L buttons to open payoff analysis
                       </span>
                     </div>
 
@@ -552,6 +552,7 @@ function MachineCell({
     </div>
   )
 }
+
 
 
 
