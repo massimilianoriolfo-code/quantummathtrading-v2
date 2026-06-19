@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Trash2 } from 'lucide-react'
+import CRPMActionButton from '@/components/crpm/CRPMActionButton'
 
 type Props = {
   positionId: string
@@ -36,13 +37,14 @@ export default function DeletePortfolioPositionButton({
   }
 
   return (
-    <button
-      type="button"
+    <CRPMActionButton
       onClick={handleDelete}
       disabled={loading}
-className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-slate-500 bg-slate-600 text-[12px] font-semibold text-white shadow-[0_3px_8px_rgba(0,0,0,0.18)] transition-all duration-150 hover:-translate-y-[1px] hover:bg-amber-400 hover:shadow-[0_6px_12px_rgba(0,0,0,0.22)] active:translate-y-[2px] active:shadow-[0_1px_3px_rgba(0,0,0,0.18)] disabled:cursor-not-allowed disabled:opacity-50"   
+      grouped
+      grouped
+      variant="danger"
     >
-      <Trash2 size={15} strokeWidth={2.2} className="text-red-400" />
-    </button>
+      <Trash2 size={12} strokeWidth={2.1} />
+    </CRPMActionButton>
   )
 }
