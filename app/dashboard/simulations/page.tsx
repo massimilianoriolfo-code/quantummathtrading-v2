@@ -362,12 +362,15 @@ export default async function SimulationsHistoryPage({
                   </CRPMPanel>
 
                   <CRPMPanel className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden p-3 shadow-sm !bg-none !bg-[#eaf3ff] !from-transparent !to-transparent ring-1 ring-inset ring-[var(--crpm-blue)] border-l-4 border-l-[var(--crpm-blue)]">
-                    <div className="mb-3 flex shrink-0 items-center justify-between gap-3">
+                    <div className="mb-3 flex shrink-0 items-center gap-2">
                       <h2 className="text-base font-black uppercase tracking-[0.20em] text-[var(--crpm-blue)]">
                         CRPM Machines
                       </h2>
-                      <span className="rounded-md border border-dashed border-[var(--crpm-blue)]/35 bg-white/45 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-[var(--crpm-blue)]">
-                        Use P/L buttons to open payoff analysis
+                      <span
+                        className="text-[11px] font-black text-[var(--crpm-muted)]"
+                        title="Click a P/L button to open the payoff analysis."
+                      >
+                        ⓘ
                       </span>
                     </div>
 
@@ -385,7 +388,7 @@ export default async function SimulationsHistoryPage({
                                 ''
                               }`}
                             >
-                              <div className="grid min-h-[58px] grid-cols-[38px_minmax(150px,1fr)_62px_66px_88px_92px_46px] items-center gap-2 px-3 py-2">
+                              <div className="grid min-h-[58px] grid-cols-[38px_minmax(150px,1fr)_56px_58px_88px_116px_46px] items-center gap-2 px-3 py-2">
                                 <div className="flex items-center gap-2">
                                   <span className={`flex h-5 w-5 items-center justify-center rounded-md border border-[var(--crpm-border)] text-[11px] font-black ${visual.text}`}>
                                     {index + 1}
