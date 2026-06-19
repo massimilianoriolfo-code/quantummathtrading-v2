@@ -5,6 +5,7 @@ import CRPMLogo from '@/components/crpm/CRPMLogo'
 import CRPMPanel from '@/components/crpm/CRPMPanel'
 import CRPMHeader from '@/components/crpm/CRPMHeader'
 import DeleteSimulationSnapshotButton from './DeleteSimulationSnapshotButton'
+import DeleteAllSimulationSnapshotsButton from './DeleteAllSimulationSnapshotsButton'
 import { CRPMThemeProvider } from '@/components/crpm/CRPMThemeProvider'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
@@ -235,8 +236,9 @@ export default async function SimulationsHistoryPage({
                     Saved CRPM Snapshots
                   </h2>
                   <div className="text-right">
-                    <div className="text-[11px] font-bold text-[var(--crpm-muted)]">
-                      {total} snapshots · {uniqueTickers} tickers
+                    <div className="flex items-center justify-end gap-2 text-[11px] font-bold text-[var(--crpm-muted)]">
+                      <span>{total} snapshots · {uniqueTickers} tickers</span>
+                      <DeleteAllSimulationSnapshotsButton count={total} />
                     </div>
                     <div className="mt-0.5 text-[10px] font-black uppercase tracking-wide text-[var(--crpm-blue)]">
                       Click a row to inspect details ▶

@@ -6,25 +6,30 @@ import { Trash2 } from 'lucide-react'
 import CRPMActionButton from '@/components/crpm/CRPMActionButton'
 
 type Props = {
-  id: string
-  ticker: string
+  count: number
 }
 
-export default function DeleteSimulationSnapshotButton({ id, ticker }: Props) {
+export default function DeleteAllSimulationSnapshotsButton({ count }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
-  async function handleDelete() {
-    if (!window.confirm(`Delete snapshot ${ticker}? This action cannot be undone.`)) return
+  async function handleDeleteAll() {
+    if (count <= 0) return
+
+    const confirmed = window.confirm(
+      `Delete ALL ${count} saved CRPM snapshots? This action cannot be undone.`
+    )
+
+    if (!confirmed) return
 
     setLoading(true)
 
-    const response = await fetch(`/api/simulations/delete?id=${encodeURIComponent(id)}`, {
+    const response = await fetch('/api/simulations/delete-all', {
       method: 'DELETE',
     })
 
     if (!response.ok) {
-      alert('Unable to delete snapshot.')
+      alert('Unable to delete all snapshots.')
       setLoading(false)
       return
     }
@@ -35,8 +40,8 @@ export default function DeleteSimulationSnapshotButton({ id, ticker }: Props) {
 
   return (
     <CRPMActionButton
-      onClick={handleDelete}
-      disabled={loading}
+      onClick={handleDeleteAll}
+      disabled={loading || count <= 0}
       variant="danger"
     >
       <Trash2 size={12} strokeWidth={2.1} />
