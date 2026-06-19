@@ -228,7 +228,7 @@ export default async function SimulationsHistoryPage({
 
           <div className="grid min-h-0 flex-1 gap-3 overflow-hidden xl:grid-cols-[minmax(500px,0.40fr)_minmax(0,0.60fr)]">
             <section className="flex min-h-0 min-w-0 flex-col gap-2 overflow-hidden">
-              <CRPMPanel className="shrink-0 border-l-4 border-l-[var(--crpm-blue)] px-3 py-2 shadow-sm">
+              <CRPMPanel className="shrink-0 px-3 py-2 shadow-sm">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-black text-[var(--crpm-heading)] whitespace-nowrap whitespace-nowrap">
                     Saved CRPM Snapshots
@@ -322,15 +322,12 @@ export default async function SimulationsHistoryPage({
             <section className="flex min-h-0 min-w-0 flex-col gap-2 overflow-hidden">
               {selectedSimulation ? (
                 <>
-                  <CRPMPanel className="min-w-0 shrink-0 px-4 py-2 shadow-sm">
+                  <CRPMPanel className="min-w-0 shrink-0 px-4 py-2 shadow-sm !bg-none !bg-[#eaf3ff] !from-transparent !to-transparent ring-1 ring-inset ring-[var(--crpm-blue)] border-l-4 border-l-[var(--crpm-blue)]">
                     <div className="grid grid-cols-[minmax(260px,1fr)_minmax(92px,0.42fr)_minmax(82px,0.36fr)_minmax(148px,0.62fr)_minmax(70px,0.30fr)] items-center gap-0">
                       <div className="flex items-center gap-4">
                         <CRPMLogo ticker={selectedSimulation.ticker} size="md" />
 
                         <div className="min-w-0">
-                          <div className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--crpm-blue)]">
-                            Selected from Saved CRPM Snapshots ▶
-                          </div>
                           <div className="flex items-end gap-2">
                             <h2 className="text-[28px] font-black leading-none tracking-tight text-[var(--crpm-heading)]">
                               {selectedSimulation.ticker}
@@ -356,7 +353,7 @@ export default async function SimulationsHistoryPage({
                     </div>
                   </CRPMPanel>
 
-                  <CRPMPanel className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden p-3 shadow-sm">
+                  <CRPMPanel className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden p-3 shadow-sm !bg-none !bg-[#eaf3ff] !from-transparent !to-transparent ring-1 ring-inset ring-[var(--crpm-blue)] border-l-4 border-l-[var(--crpm-blue)]">
                     <div className="mb-3 flex shrink-0 items-center justify-between gap-3">
                       <h2 className="text-base font-black uppercase tracking-[0.20em] text-[var(--crpm-blue)]">
                         CRPM Machines
