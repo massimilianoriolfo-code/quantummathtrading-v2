@@ -62,6 +62,13 @@ type SimulatorData = {
   method: string
 }
 
+function parseStrikeLevels(strike: number | string) {
+  return String(strike)
+    .split('/')
+    .map((item) => Number(item.trim()))
+    .filter((value) => Number.isFinite(value))
+}
+
 function buildConeChart(data: SimulatorData) {
   const labels: string[] = []
   const upper: number[] = []
@@ -89,6 +96,19 @@ function buildConeChart(data: SimulatorData) {
 
     spotLine.push(spot)
   }
+
+  const machineStrikeDatasets = data.machines.flatMap((machine, index) =>
+    parseStrikeLevels(machine.strike).map((strike, strikeIndex) => ({
+      label: `M${index + 1}${strikeIndex > 0 ? `.${strikeIndex + 1}` : ''} Strike ${strike}`,
+      data: labels.map(() => strike),
+      borderColor: 'rgba(37,99,235,0.55)',
+      backgroundColor: 'rgba(37,99,235,0.06)',
+      borderDash: [4, 4],
+      borderWidth: 1.5,
+      pointRadius: 0,
+      tension: 0,
+    }))
+  )
 
   return {
     labels,
@@ -122,6 +142,7 @@ function buildConeChart(data: SimulatorData) {
         pointRadius: 0,
         tension: 0.25,
       },
+      ...machineStrikeDatasets,
     ],
   }
 }
@@ -365,6 +386,8 @@ export default function SimulatorPage() {
                           position: 'top',
                           labels: {
                             color: '#111',
+                            filter: (legendItem) =>
+                              !String(legendItem.text || '').includes('Strike'),
                             font: {
                               size: 13,
                               weight: 'bold',
@@ -414,6 +437,34 @@ export default function SimulatorPage() {
                       },
                     }}
                   />
+                </div>
+              </div>
+
+              <div className="mt-4 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
+                <h3 className="text-lg font-bold">Machine Strike Overlay</h3>
+                <div className="mt-3 overflow-hidden rounded-xl border border-zinc-200">
+                  <div className="grid grid-cols-4 bg-zinc-100 px-3 py-2 text-xs font-black uppercase text-zinc-500">
+                    <div>Machine</div>
+                    <div className="text-right">Strike</div>
+                    <div className="text-right">Distance</div>
+                    <div className="text-right">Action</div>
+                  </div>
+
+                  {data.machines.flatMap((machine, index) =>
+                    parseStrikeLevels(machine.strike).map((strike, strikeIndex) => (
+                      <div
+                        key={`${index}-${strikeIndex}`}
+                        className="grid grid-cols-4 border-t border-zinc-200 px-3 py-2 text-sm font-bold"
+                      >
+                        <div>M{index + 1}{strikeIndex > 0 ? `.${strikeIndex + 1}` : ''}</div>
+                        <div className="text-right">${strike.toFixed(2)}</div>
+                        <div className="text-right">
+                          {(((strike - data.spot) / data.spot) * 100).toFixed(2)}%
+                        </div>
+                        <div className="truncate text-right">{machine.action}</div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
 
