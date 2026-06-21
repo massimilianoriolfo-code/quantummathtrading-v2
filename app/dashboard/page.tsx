@@ -103,6 +103,39 @@ function DashboardPanel({
   )
 }
 
+function PanelMiniKpis({
+  items,
+}: {
+  items: { label: string; value: string; tone?: 'default' | 'green' | 'red' | 'blue' }[]
+}) {
+  return (
+    <div className="mb-2 grid grid-cols-3 gap-2">
+      {items.map((item) => {
+        const valueClass =
+          item.tone === 'green'
+            ? 'text-[#009a57]'
+            : item.tone === 'red'
+              ? 'text-[#ff1f2d]'
+              : item.tone === 'blue'
+                ? 'text-[#004fc4]'
+                : 'text-[#081225]'
+
+        return (
+          <div key={item.label} className="rounded-lg border border-[#d7dee8] bg-[#f8fafc] px-2 py-1.5">
+            <div className="text-[9px] font-black uppercase tracking-wide text-[#4b5f7a]">
+              {item.label}
+            </div>
+            <div className={`mt-0.5 truncate text-[12px] font-black ${valueClass}`}>
+              {item.value}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+
 function MiniTable({
   headers,
   rows,
@@ -180,7 +213,6 @@ export default async function DashboardPage() {
   const watchlistCount = watchlist?.length || 0
   const simulationsCount = simulations?.length || 0
   const latestAnalysis = simulations?.[0] || null
-
   const latestSimulationByTicker = new Map<string, any>()
 
   simulations?.forEach((item) => {
@@ -189,6 +221,24 @@ export default async function DashboardPage() {
       latestSimulationByTicker.set(ticker, item)
     }
   })
+
+  const totalPortfolioMarketValue =
+    portfolio?.reduce((total, item) => {
+      return total + Number(item.quantity || 0) * Number(item.market_price || 0)
+    }, 0) || 0
+
+  const totalPortfolioUnrealizedPL =
+    portfolio?.reduce((total, item) => {
+      const quantity = Number(item.quantity || 0)
+      const marketPrice = Number(item.market_price || 0)
+      const averageCost = Number(item.average_cost || 0)
+      return total + quantity * (marketPrice - averageCost)
+    }, 0) || 0
+
+  const analyzedWatchlistCount =
+    watchlist?.filter((item) => latestSimulationByTicker.has(String(item.ticker || '').toUpperCase())).length || 0
+
+  const latestSimulationTicker = latestAnalysis?.ticker || '-'
 
 
   const portfolioRows =
@@ -375,6 +425,17 @@ export default async function DashboardPage() {
               href="/dashboard/portfolio"
               action="Open Portfolio"
             >
+              <PanelMiniKpis
+                items={[
+                  { label: 'Positions', value: formatNumber(portfolioCount) },
+                  { label: 'Market Value', value: formatMoney(totalPortfolioMarketValue) },
+                  {
+                    label: 'Unreal. P/L',
+                    value: formatMoney(totalPortfolioUnrealizedPL),
+                    tone: totalPortfolioUnrealizedPL >= 0 ? 'green' : 'red',
+                  },
+                ]}
+              />
               <MiniTable
                 headers={['Ticker', 'Qty', 'Mkt Value', 'P/L']}
                 rows={portfolioRows}
@@ -388,6 +449,13 @@ export default async function DashboardPage() {
               href="/dashboard/watchlist"
               action="Open Watchlist"
             >
+              <PanelMiniKpis
+                items={[
+                  { label: 'Tickers', value: formatNumber(watchlistCount) },
+                  { label: 'Analyzed', value: formatNumber(analyzedWatchlistCount), tone: 'blue' },
+                  { label: 'Last Analysis', value: latestAnalysis ? formatShortDate(latestAnalysis.created_at) : '-' },
+                ]}
+              />
               <MiniTable
                 headers={['Ticker', 'Spot', 'IV', 'Analysis']}
                 rows={watchlistRows}
@@ -401,6 +469,13 @@ export default async function DashboardPage() {
               href="/dashboard/simulations"
               action="Open History"
             >
+              <PanelMiniKpis
+                items={[
+                  { label: 'Snapshots', value: formatNumber(simulationsCount) },
+                  { label: 'Latest', value: latestSimulationTicker, tone: 'blue' },
+                  { label: 'Last Saved', value: latestAnalysis ? formatShortDate(latestAnalysis.created_at) : '-' },
+                ]}
+              />
               <MiniTable
                 headers={['Ticker', 'Spot', 'IV', 'Time']}
                 rows={simulationRows}
