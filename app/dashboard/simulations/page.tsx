@@ -388,7 +388,7 @@ export default async function SimulationsHistoryPage({
                                 ''
                               }`}
                             >
-                              <div className="grid min-h-[58px] grid-cols-[38px_minmax(150px,1fr)_56px_58px_88px_116px_46px] items-center gap-2 px-3 py-2">
+                              <div className="grid h-[66px] grid-cols-[38px_minmax(150px,1fr)_56px_58px_88px_116px_46px] items-center gap-2 px-3 py-2">
                                 <div className="flex items-center gap-2">
                                   <span className={`flex h-5 w-5 items-center justify-center rounded-md border border-[var(--crpm-border)] text-[11px] font-black ${visual.text}`}>
                                     {index + 1}
@@ -549,7 +549,7 @@ function MachineCell({
       <div className="text-[8px] font-black uppercase tracking-wide text-[var(--crpm-muted)]">
         {label}
       </div>
-      <div className={`mt-0.5 text-[11px] font-black leading-4 ${className}`}>
+      <div className={`mt-0.5 line-clamp-2 text-[11px] font-black leading-4 ${className}`}>
         {value}
       </div>
     </div>
