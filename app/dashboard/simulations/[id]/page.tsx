@@ -7,6 +7,7 @@ import CRPMMetricCard from '@/components/crpm/CRPMMetricCard'
 import CRPMPanel from '@/components/crpm/CRPMPanel'
 import { CRPMThemeProvider } from '@/components/crpm/CRPMThemeProvider'
 import CRPMThemeToggle from '@/components/crpm/CRPMThemeToggle'
+import CRPMSnapshotCone from '@/components/crpm/CRPMSnapshotCone'
 
 function money(value: number) {
   if (!Number.isFinite(value)) return '-'
@@ -229,6 +230,10 @@ export default async function SimulationDetailPage({
             <CRPMMetricCard label="Machines" value={`${machines.length}/5`} />
           </div>
         </CRPMPanel>
+
+        <div className="mt-2">
+          <CRPMSnapshotCone result={result} />
+        </div>
 
         <CRPMPanel className="mt-2 p-3">
           <div className="mb-2 flex items-center justify-between gap-4">
