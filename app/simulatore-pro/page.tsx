@@ -510,7 +510,7 @@ export default function SimulatorPage() {
                         </p>
                       </div>
 
-                      <div className="rounded-xl bg-black px-4 py-2 text-center text-sm font-bold text-white">
+                      <div className="text-right text-sm font-bold uppercase text-zinc-400">
                         {machine.action}
                       </div>
                     </div>

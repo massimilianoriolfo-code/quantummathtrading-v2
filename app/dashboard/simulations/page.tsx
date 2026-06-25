@@ -276,7 +276,7 @@ export default async function SimulationsHistoryPage({
                                 : 'hover:bg-[var(--crpm-soft)]'
                             }`}
                           >
-                            <Link href={`/dashboard/simulations?selected=${item.id}`} className="contents">
+                            <Link href={`/dashboard/simulations/${item.id}`} className="contents">
                             <div className="flex items-center gap-2">
                               <CRPMLogo ticker={item.ticker} size="xs" />
                               <span className="font-black text-[var(--crpm-heading)] whitespace-nowrap whitespace-nowrap">
