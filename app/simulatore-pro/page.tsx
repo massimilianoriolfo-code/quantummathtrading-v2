@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { UserButton } from '@clerk/nextjs'
 import CRPMAnalysisView from '@/components/crpm/CRPMAnalysisView'
+import SymbolSearch from '@/components/SymbolSearch'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -270,12 +271,12 @@ export default function SimulatorPage() {
         topRightSlot={<UserButton />}
         toolbarSlot={
           <>
-            <input
-              value={ticker}
-              onChange={(e) => setTicker(e.target.value.toUpperCase())}
-              placeholder="ENTER TICKER"
-              className="w-64 rounded-xl border-2 border-zinc-300 bg-white px-4 py-3"
-            />
+            <div className="w-80">
+              <SymbolSearch
+                placeholder="Search company, ticker or ISIN..."
+                onSelect={(result) => setTicker(result.ticker.toUpperCase())}
+              />
+            </div>
 
             <button
               onClick={() => runAnalysis()}
@@ -324,12 +325,12 @@ export default function SimulatorPage() {
         </h1>
 
         <div className="mt-8 flex justify-center gap-4">
-          <input
-            value={ticker}
-            onChange={(e) => setTicker(e.target.value.toUpperCase())}
-            placeholder="ENTER TICKER"
-            className="w-64 rounded-xl border-2 border-zinc-300 bg-white px-4 py-3"
-          />
+          <div className="w-80">
+            <SymbolSearch
+              placeholder="Search company, ticker or ISIN..."
+              onSelect={(result) => setTicker(result.ticker.toUpperCase())}
+            />
+          </div>
 
           <button
             onClick={() => runAnalysis()}
