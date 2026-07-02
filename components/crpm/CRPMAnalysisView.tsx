@@ -37,16 +37,22 @@ function parseStrikeLevels(strike: number | string) {
 export default function CRPMAnalysisView({
   data,
   generatedAt,
+  backHref = '/dashboard/simulations',
+  backLabel = '← Back',
+  actionSlot = null,
 }: {
   data: SavedAnalysisData
   generatedAt: string | null
+  backHref?: string
+  backLabel?: string
+  actionSlot?: React.ReactNode
 }) {
   return (
     <main className="min-h-screen bg-zinc-100 p-6 text-zinc-950">
       <div className="mx-auto max-w-6xl rounded-3xl bg-white p-8 shadow-xl">
         <div className="mb-6 flex items-center justify-between">
-          <Link href="/dashboard/simulations" className="rounded-xl bg-zinc-200 px-4 py-2 text-sm font-bold transition hover:bg-zinc-300">
-            ← Back
+          <Link href={backHref} className="rounded-xl bg-zinc-200 px-4 py-2 text-sm font-bold transition hover:bg-zinc-300">
+            {backLabel}
           </Link>
         </div>
 
@@ -54,7 +60,11 @@ export default function CRPMAnalysisView({
 
         <div className="mt-8 flex justify-center gap-4">
           <input value={data.ticker} readOnly className="w-64 rounded-xl border-2 border-zinc-300 bg-white px-4 py-3" />
-          <button disabled className="rounded-xl bg-black px-6 py-3 text-white opacity-80">Saved Analysis</button>
+          {actionSlot ?? (
+            <button disabled className="rounded-xl bg-black px-6 py-3 text-white opacity-80">
+              Saved Analysis
+            </button>
+          )}
         </div>
 
         <section className="mt-10 rounded-2xl border border-zinc-200 bg-white p-6">
