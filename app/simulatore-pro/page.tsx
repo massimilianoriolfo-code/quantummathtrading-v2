@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { UserButton } from '@clerk/nextjs'
+import CRPMAnalysisView from '@/components/crpm/CRPMAnalysisView'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -257,6 +258,51 @@ export default function SimulatorPage() {
           : 'Unable to add to watchlist'
       )
     }
+  }
+
+  if (data) {
+    return (
+      <CRPMAnalysisView
+        data={data}
+        generatedAt={new Date().toISOString()}
+        backHref={returnTo}
+        backLabel="← Back"
+        topRightSlot={<UserButton />}
+        toolbarSlot={
+          <>
+            <input
+              value={ticker}
+              onChange={(e) => setTicker(e.target.value.toUpperCase())}
+              placeholder="ENTER TICKER"
+              className="w-64 rounded-xl border-2 border-zinc-300 bg-white px-4 py-3"
+            />
+
+            <button
+              onClick={() => runAnalysis()}
+              disabled={!ticker || loading}
+              className="rounded-xl bg-black px-6 py-3 text-white disabled:opacity-40"
+            >
+              {loading ? 'Loading...' : 'Run Analysis'}
+            </button>
+          </>
+        }
+        companyActionSlot={
+          <button
+            onClick={addToWatchlist}
+            className="rounded-xl bg-black px-4 py-2 text-sm font-bold text-white transition hover:opacity-90"
+          >
+            Add to Watchlist
+          </button>
+        }
+        noticeSlot={
+          watchlistMessage ? (
+            <div className="mt-4 rounded-xl bg-green-50 p-3 text-sm font-bold text-green-700">
+              {watchlistMessage}
+            </div>
+          ) : null
+        }
+      />
+    )
   }
 
   return (

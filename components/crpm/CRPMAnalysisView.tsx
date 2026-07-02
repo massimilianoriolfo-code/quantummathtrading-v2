@@ -40,12 +40,20 @@ export default function CRPMAnalysisView({
   backHref = '/dashboard/simulations',
   backLabel = '← Back',
   actionSlot = null,
+  toolbarSlot = null,
+  companyActionSlot = null,
+  noticeSlot = null,
+  topRightSlot = null,
 }: {
   data: SavedAnalysisData
   generatedAt: string | null
   backHref?: string
   backLabel?: string
   actionSlot?: React.ReactNode
+  toolbarSlot?: React.ReactNode
+  companyActionSlot?: React.ReactNode
+  noticeSlot?: React.ReactNode
+  topRightSlot?: React.ReactNode
 }) {
   return (
     <main className="min-h-screen bg-zinc-100 p-6 text-zinc-950">
@@ -54,16 +62,22 @@ export default function CRPMAnalysisView({
           <Link href={backHref} className="rounded-xl bg-zinc-200 px-4 py-2 text-sm font-bold transition hover:bg-zinc-300">
             {backLabel}
           </Link>
+
+          {topRightSlot}
         </div>
 
         <h1 className="text-center text-4xl font-bold">CRPM Quantitative Analysis</h1>
 
         <div className="mt-8 flex justify-center gap-4">
-          <input value={data.ticker} readOnly className="w-64 rounded-xl border-2 border-zinc-300 bg-white px-4 py-3" />
-          {actionSlot ?? (
-            <button disabled className="rounded-xl bg-black px-6 py-3 text-white opacity-80">
-              Saved Analysis
-            </button>
+          {toolbarSlot ?? (
+            <>
+              <input value={data.ticker} readOnly className="w-64 rounded-xl border-2 border-zinc-300 bg-white px-4 py-3" />
+              {actionSlot ?? (
+                <button disabled className="rounded-xl bg-black px-6 py-3 text-white opacity-80">
+                  Saved Analysis
+                </button>
+              )}
+            </>
           )}
         </div>
 
@@ -77,7 +91,11 @@ export default function CRPMAnalysisView({
                 {generatedAt ? new Date(generatedAt).toLocaleTimeString() : '-'}
               </p>
             </div>
+
+            {companyActionSlot}
           </div>
+
+          {noticeSlot}
 
           <div className="mt-4 grid gap-4 md:grid-cols-4">
             <Metric label="Spot Price" value={`$${data.spot}`} />
