@@ -45,12 +45,27 @@ export async function GET(request: Request) {
 
     const data = await response.json()
 
+    const indexAliases: Record<string, string> = {
+      SPX: '^SPX',
+      NDX: '^NDX',
+      NDQ: '^NDX',
+      RUT: '^RUT',
+      VIX: '^VIX',
+      DJI: '^DJI',
+    }
+
+    const normalizedQuery =
+      indexAliases[query] || query
+
+    const allowedQuoteTypes =
+      new Set(['EQUITY', 'ETF', 'INDEX'])
+
     const results =
-      data.quotes
-        ?.filter((quote: YahooQuote) => {
+      (data.quotes || [])
+        .filter((quote: YahooQuote) => {
           return (
             quote.symbol &&
-            ['EQUITY', 'ETF'].includes(String(quote.quoteType))
+            allowedQuoteTypes.has(String(quote.quoteType))
           )
         })
         .map((quote: YahooQuote) => ({
@@ -64,7 +79,21 @@ export async function GET(request: Request) {
             quote.exchange ||
             '',
           isin: isIsin(query) ? query : null,
-        })) || []
+        }))
+        .sort((a: { ticker?: string }, b: { ticker?: string }) => {
+          const tickerA = String(a.ticker || '').toUpperCase()
+          const tickerB = String(b.ticker || '').toUpperCase()
+
+          const rank = (ticker: string) => {
+            if (ticker === normalizedQuery) return 0
+            if (ticker === `^${query}`) return 1
+            if (ticker.startsWith(normalizedQuery)) return 2
+            if (ticker.replace(/^\\^/, '').startsWith(query)) return 3
+            return 4
+          }
+
+          return rank(tickerA) - rank(tickerB)
+        })
 
     return NextResponse.json(results)
   } catch (error) {
