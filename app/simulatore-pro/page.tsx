@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { UserButton } from '@clerk/nextjs'
 import CRPMAnalysisView from '@/components/crpm/CRPMAnalysisView'
-import SymbolSearch from '@/components/SymbolSearch'
+import CRPMAnalysisToolbar from '@/components/crpm/CRPMAnalysisToolbar'
 type Machine = {
   name: string
   action: string
@@ -163,22 +163,12 @@ export default function SimulatorPage() {
         backLabel="← Back"
         topRightSlot={<UserButton />}
         toolbarSlot={
-          <>
-            <div className="w-80">
-              <SymbolSearch
-                placeholder="Search company, ticker or ISIN..."
-                onSelect={(result) => setTicker(result.ticker.toUpperCase())}
-              />
-            </div>
-
-            <button
-              onClick={() => runAnalysis()}
-              disabled={!ticker || loading}
-              className="rounded-xl bg-black px-6 py-3 text-white disabled:opacity-40"
-            >
-              {loading ? 'Loading...' : 'Run Analysis'}
-            </button>
-          </>
+          <CRPMAnalysisToolbar
+            ticker={ticker}
+            loading={loading}
+            onSelectTicker={setTicker}
+            onRunAnalysis={() => runAnalysis()}
+          />
         }
         companyActionSlot={
           <button
@@ -217,22 +207,14 @@ export default function SimulatorPage() {
           CRPM Quantitative Analysis
         </h1>
 
-        <div className="mt-8 flex justify-center gap-4">
-          <div className="w-80">
-            <SymbolSearch
-              placeholder="Search company, ticker or ISIN..."
-              onSelect={(result) => setTicker(result.ticker.toUpperCase())}
+          <div className="mt-8 flex justify-center gap-4">
+            <CRPMAnalysisToolbar
+              ticker={ticker}
+              loading={loading}
+              onSelectTicker={setTicker}
+              onRunAnalysis={() => runAnalysis()}
             />
           </div>
-
-          <button
-            onClick={() => runAnalysis()}
-            disabled={!ticker || loading}
-            className="rounded-xl bg-black px-6 py-3 text-white disabled:opacity-40"
-          >
-            {loading ? 'Loading...' : 'Run Analysis'}
-          </button>
-        </div>
 
         {error && (
           <div className="mt-10 rounded-2xl border border-red-200 bg-red-50 p-6 text-red-700">
