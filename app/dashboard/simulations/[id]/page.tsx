@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import CRPMAnalysisView, { SavedAnalysisData } from '@/components/crpm/CRPMAnalysisView'
+import CRPMPageShell from '@/components/crpm/CRPMPageShell'
 
 function parseResult(raw: any) {
   if (!raw) return {}
@@ -51,5 +52,13 @@ export default async function SimulationDetailPage({
     method: result.method,
   }
 
-  return <CRPMAnalysisView data={data} generatedAt={simulation.created_at} />
+  return (
+    <CRPMPageShell
+      active="simulations"
+      title="CRPM Quantitative Analysis"
+      subtitle="Shared CRPM analysis workspace for live simulations and saved snapshots."
+    >
+      <CRPMAnalysisView data={data} generatedAt={simulation.created_at} />
+    </CRPMPageShell>
+  )
 }

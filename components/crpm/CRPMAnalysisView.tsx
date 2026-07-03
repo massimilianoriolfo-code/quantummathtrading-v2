@@ -56,17 +56,14 @@ export default function CRPMAnalysisView({
   topRightSlot?: React.ReactNode
 }) {
   return (
-    <main className="min-h-screen bg-zinc-100 p-6 text-zinc-950">
-      <div className="mx-auto max-w-6xl rounded-3xl bg-white p-8 shadow-xl">
-        <div className="mb-6 flex items-center justify-between">
+    <>
+        <div className="mt-4 flex items-center justify-between">
           <Link href={backHref} className="rounded-xl bg-zinc-200 px-4 py-2 text-sm font-bold transition hover:bg-zinc-300">
             {backLabel}
           </Link>
 
           {topRightSlot}
         </div>
-
-        <h1 className="text-center text-4xl font-bold">CRPM Quantitative Analysis</h1>
 
         <div className="mt-8 flex justify-center gap-4">
           {toolbarSlot ?? (
@@ -177,8 +174,7 @@ export default function CRPMAnalysisView({
             ))}
           </div>
         </section>
-      </div>
-    </main>
+    </>
   )
 }
 

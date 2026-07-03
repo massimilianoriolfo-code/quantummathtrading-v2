@@ -1,7 +1,7 @@
 import { UserButton } from '@clerk/nextjs'
 import CRPMAppNav from './CRPMAppNav'
 
-type ActiveNav = 'dashboard' | 'portfolio' | 'watchlist' | 'simulations' | 'assistant' | 'simulator'
+export type ActiveNav = 'dashboard' | 'portfolio' | 'watchlist' | 'simulations' | 'assistant' | 'simulator'
 
 export default function CRPMHeader({ active, title, subtitle }: { active: ActiveNav; title: string; subtitle?: string }) {
   return (
