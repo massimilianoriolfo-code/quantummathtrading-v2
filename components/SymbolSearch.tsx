@@ -23,7 +23,7 @@ export default function SymbolSearch({
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (query.trim().length < 2) {
+    if (query.trim().length < 1) {
       setResults([])
       return
     }
