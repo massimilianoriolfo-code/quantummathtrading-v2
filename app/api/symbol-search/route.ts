@@ -50,7 +50,7 @@ export async function GET(request: Request) {
         ?.filter((quote: YahooQuote) => {
           return (
             quote.symbol &&
-            quote.quoteType === 'EQUITY'
+            ['EQUITY', 'ETF'].includes(String(quote.quoteType))
           )
         })
         .map((quote: YahooQuote) => ({
