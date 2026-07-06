@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import CRPMPageShell from '@/components/crpm/CRPMPageShell'
 import CRPMAnalysisView from '@/components/crpm/CRPMAnalysisView'
 import CRPMAnalysisToolbar from '@/components/crpm/CRPMAnalysisToolbar'
+import CRPMAnalysisActions from '@/components/crpm/CRPMAnalysisActions'
 
 type Machine = {
   name: string
@@ -140,12 +141,7 @@ export default function SimulatorPage() {
                 onSelectTicker={setTicker}
                 onRunAnalysis={() => runAnalysis()}
                 rightSlot={
-                  <button
-                    onClick={addToWatchlist}
-                    className="rounded-xl bg-black px-4 py-3 text-sm font-bold text-white transition hover:opacity-90"
-                  >
-                    Add to Watchlist
-                  </button>
+                  <CRPMAnalysisActions onAddToWatchlist={addToWatchlist} />
                 }
               />
             }
