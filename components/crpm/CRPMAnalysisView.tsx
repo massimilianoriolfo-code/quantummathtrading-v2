@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import CRPMProbabilityCone from '@/components/crpm/CRPMProbabilityCone'
+import CRPMAnalysisToolbar from '@/components/crpm/CRPMAnalysisToolbar'
 type Machine = {
   name: string
   action: string
@@ -65,16 +66,24 @@ export default function CRPMAnalysisView({
           {topRightSlot}
         </div>
 
-        <div className="mt-8 flex justify-center gap-4">
+        <div className="mt-8">
           {toolbarSlot ?? (
-            <>
-              <input value={data.ticker} readOnly className="w-64 rounded-xl border-2 border-zinc-300 bg-white px-4 py-3" />
-              {actionSlot ?? (
-                <button disabled className="rounded-xl bg-black px-6 py-3 text-white opacity-80">
-                  Saved Analysis
-                </button>
-              )}
-            </>
+            <CRPMAnalysisToolbar
+              leftSlot={
+                <input
+                  value={data.ticker}
+                  readOnly
+                  className="w-64 rounded-xl border-2 border-zinc-300 bg-white px-4 py-3"
+                />
+              }
+              centerSlot={
+                actionSlot ?? (
+                  <button disabled className="rounded-xl bg-black px-6 py-3 text-white opacity-80">
+                    Saved Analysis
+                  </button>
+                )
+              }
+            />
           )}
         </div>
 
