@@ -15,7 +15,7 @@ type Machine = {
   note: string
 }
 
-export type SavedAnalysisData = {
+export type CRPMAnalysisModel = {
   ticker: string
   company: string
   spot: number
@@ -46,7 +46,7 @@ export default function CRPMAnalysisView({
   noticeSlot = null,
   topRightSlot = null,
 }: {
-  data: SavedAnalysisData
+  data: CRPMAnalysisModel
   generatedAt: string | null
   backHref?: string
   backLabel?: string

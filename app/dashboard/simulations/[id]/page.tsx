@@ -1,6 +1,6 @@
 import { auth } from '@clerk/nextjs/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
-import CRPMAnalysisView, { SavedAnalysisData } from '@/components/crpm/CRPMAnalysisView'
+import CRPMAnalysisView, { CRPMAnalysisModel } from '@/components/crpm/CRPMAnalysisView'
 import CRPMPageShell from '@/components/crpm/CRPMPageShell'
 
 function parseResult(raw: any) {
@@ -36,7 +36,7 @@ export default async function SimulationDetailPage({
 
   const result = parseResult(simulation.result)
 
-  const data: SavedAnalysisData = {
+  const data: CRPMAnalysisModel = {
     ticker: String(result.ticker || simulation.ticker || '').toUpperCase(),
     company: result.company || simulation.company || simulation.ticker,
     spot: Number(result.spot ?? simulation.spot),
