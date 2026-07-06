@@ -139,15 +139,15 @@ export default function SimulatorPage() {
                 loading={loading}
                 onSelectTicker={setTicker}
                 onRunAnalysis={() => runAnalysis()}
+                rightSlot={
+                  <button
+                    onClick={addToWatchlist}
+                    className="rounded-xl bg-black px-4 py-3 text-sm font-bold text-white transition hover:opacity-90"
+                  >
+                    Add to Watchlist
+                  </button>
+                }
               />
-            }
-            companyActionSlot={
-              <button
-                onClick={addToWatchlist}
-                className="rounded-xl bg-black px-4 py-2 text-sm font-bold text-white transition hover:opacity-90"
-              >
-                Add to Watchlist
-              </button>
             }
             noticeSlot={
               watchlistMessage ? (
