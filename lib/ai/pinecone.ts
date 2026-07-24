@@ -18,7 +18,7 @@ export function getPineconeClient(): Pinecone {
 }
 
 export function getCRPMKnowledgeIndex() {
-  return getPineconeClient().index(
-    getRequiredServerEnvironmentVariable('PINECONE_INDEX_HOST'),
-  )
+  return getPineconeClient().index({
+    host: getRequiredServerEnvironmentVariable('PINECONE_INDEX_HOST'),
+  })
 }
