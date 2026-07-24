@@ -1,13 +1,15 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 
-export default function PaymentSuccessPage() {
+function PaymentSuccessContent() {
   const searchParams = useSearchParams()
   const sessionId = searchParams.get('session_id')
 
-  const [status, setStatus] = useState('Activating your premium access...')
+  const [status, setStatus] = useState(
+    'Activating your premium access...'
+  )
 
   useEffect(() => {
     async function activatePremium() {
@@ -55,5 +57,29 @@ export default function PaymentSuccessPage() {
         </p>
       </div>
     </main>
+  )
+}
+
+function PaymentSuccessFallback() {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-zinc-100 p-8 text-zinc-950">
+      <div className="max-w-xl rounded-3xl bg-white p-8 text-center shadow-xl">
+        <h1 className="text-3xl font-bold">
+          Payment Successful
+        </h1>
+
+        <p className="mt-4 text-zinc-600">
+          Loading payment information...
+        </p>
+      </div>
+    </main>
+  )
+}
+
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense fallback={<PaymentSuccessFallback />}>
+      <PaymentSuccessContent />
+    </Suspense>
   )
 }

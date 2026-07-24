@@ -61,7 +61,6 @@ export default function EditPortfolioPositionButton({
       onClick={handleEdit}
       disabled={loading}
       grouped
-      grouped
       variant="neutral"
     >
       <Pencil size={12} strokeWidth={2.1} />

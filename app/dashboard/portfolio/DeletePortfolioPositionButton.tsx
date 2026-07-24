@@ -41,7 +41,6 @@ export default function DeletePortfolioPositionButton({
       onClick={handleDelete}
       disabled={loading}
       grouped
-      grouped
       variant="danger"
     >
       <Trash2 size={12} strokeWidth={2.1} />

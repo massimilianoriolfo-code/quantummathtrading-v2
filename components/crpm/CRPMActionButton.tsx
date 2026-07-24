@@ -11,7 +11,6 @@ type Props = {
   variant?: Variant
   type?: 'button' | 'submit'
   grouped?: boolean
-  grouped?: boolean
 }
 
 export default function CRPMActionButton({

@@ -35,7 +35,6 @@ export default function RefreshPriceButton({ positionId, ticker }: Props) {
       onClick={handleRefresh}
       disabled={loading}
       grouped
-      grouped
       variant="neutral"
     >
       <RefreshCw size={12} strokeWidth={2.1} className={loading ? 'animate-spin' : ''} />

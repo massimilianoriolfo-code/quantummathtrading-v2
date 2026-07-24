@@ -101,9 +101,15 @@ export async function POST(req: NextRequest) {
 
     if (event.type === 'invoice.payment_failed') {
       const invoice = event.data.object as Stripe.Invoice
-      const subscriptionId = invoice.subscription
+      const invoiceSubscription =
+        invoice.parent?.subscription_details?.subscription
 
-      if (typeof subscriptionId === 'string') {
+      const subscriptionId =
+        typeof invoiceSubscription === 'string'
+          ? invoiceSubscription
+          : invoiceSubscription?.id
+
+      if (subscriptionId) {
         const subscription =
           await stripe.subscriptions.retrieve(subscriptionId)
 
